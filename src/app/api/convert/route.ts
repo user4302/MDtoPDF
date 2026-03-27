@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Launch Puppeteer
+    // Launch Puppeteer with Windows-compatible configuration
     let browser;
     try {
       browser = await puppeteer.launch({
@@ -136,14 +136,20 @@ export async function POST(request: NextRequest) {
           '--disable-dev-shm-usage',
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu'
-        ]
+          '--disable-gpu',
+          '--disable-extensions',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding'
+        ],
+        timeout: 30000
       });
     } catch (error) {
       console.error('Failed to launch browser:', error);
-      return NextResponse.json({ error: 'Failed to initialize PDF generation' }, { status: 500 });
+      return NextResponse.json({
+        error: 'Failed to initialize PDF generation. This might be due to missing Chromium binaries on Windows.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 });
     }
 
     const page = await browser.newPage();

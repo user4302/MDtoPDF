@@ -42,7 +42,11 @@ export default function Home() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        alert('Failed to convert to PDF');
+        const errorData = await response.json();
+        const errorMessage = errorData.details ?
+          `${errorData.error}: ${errorData.details}` :
+          errorData.error || 'Failed to convert to PDF';
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error converting to PDF:', error);
@@ -78,74 +82,56 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Markdown to PDF Converter</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Markdown to PDF Converter</h1>
           <p className="text-gray-600">Convert your markdown files to PDF instantly</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Input Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Markdown Input</h2>
-              <label className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer transition-colors">
-                Upload .md file
-                <input
-                  type="file"
-                  accept=".md,text/markdown"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            <textarea
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              placeholder="Enter your markdown here or upload a file..."
-              className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-            <button
-              onClick={handleConvertToPdf}
-              disabled={isConverting || !markdown.trim()}
-              className="mt-4 w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-            >
-              {isConverting ? 'Converting...' : 'Convert to PDF'}
-            </button>
+        {/* Input Section */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Markdown Input</h2>
+            <label className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md">
+              Upload .md file
+              <input
+                type="file"
+                accept=".md,text/markdown"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
           </div>
-
-          {/* Preview Section */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Preview</h2>
-            <div className="h-96 p-4 border border-gray-300 rounded-lg overflow-auto bg-gray-50">
-              {markdown ? (
-                <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap font-mono text-sm">{markdown}</pre>
-                </div>
-              ) : (
-                <div className="text-gray-400 text-center mt-32">
-                  Your markdown preview will appear here...
-                </div>
-              )}
-            </div>
-          </div>
+          <textarea
+            value={markdown}
+            onChange={(e) => setMarkdown(e.target.value)}
+            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript&#10;// Code block&#10;console.log('Hello World');&#10;```"
+            className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
+          />
+          <button
+            onClick={handleConvertToPdf}
+            disabled={isConverting || !markdown.trim()}
+            className="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none"
+          >
+            {isConverting ? 'Converting...' : 'Convert to PDF'}
+          </button>
         </div>
 
         {/* Features Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-blue-500 text-3xl mb-3">📝</div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="text-3xl mb-3">📝</div>
             <h3 className="font-semibold text-gray-800 mb-2">Easy Input</h3>
             <p className="text-gray-600 text-sm">Type directly or upload markdown files</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-green-500 text-3xl mb-3">⚡</div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="text-3xl mb-3">⚡</div>
             <h3 className="font-semibold text-gray-800 mb-2">Fast Conversion</h3>
             <p className="text-gray-600 text-sm">Instant PDF generation with high quality</p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="text-purple-500 text-3xl mb-3">🎨</div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <div className="text-3xl mb-3">🎨</div>
             <h3 className="font-semibold text-gray-800 mb-2">Clean Output</h3>
             <p className="text-gray-600 text-sm">Professional-looking PDFs every time</p>
           </div>
