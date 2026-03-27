@@ -4,27 +4,38 @@ import puppeteer from 'puppeteer';
 
 /**
  * API endpoint for converting markdown content to PDF
+ * 
+ * This endpoint handles the complete conversion process:
+ * 1. Parses markdown input using marked library
+ * 2. Creates styled HTML document with GitHub-style CSS
+ * 3. Uses Puppeteer to generate PDF from HTML
+ * 4. Returns PDF file as downloadable response
+ * 
  * @param request - Next.js request object containing markdown content in JSON body
- * @returns PDF file as response or error message
+ * @returns PDF file as response or error message with appropriate status code
  */
 export async function POST(request: NextRequest) {
   try {
+    // Parse JSON body and extract markdown content
     const { markdown } = await request.json();
 
+    // Validate required input
     if (!markdown) {
       return NextResponse.json({ error: 'Markdown content is required' }, { status: 400 });
     }
 
-    // Convert markdown to HTML
+    // Convert markdown to HTML using marked library
     const html = marked(markdown);
 
-    // Create HTML document with styling
+    // Create complete HTML document with GitHub-flavored styling
+    // This ensures the PDF has professional typography and layout
     const htmlDocument = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
         <style>
+          /* Base typography and layout styles */
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
@@ -34,6 +45,7 @@ export async function POST(request: NextRequest) {
             padding: 40px 20px;
             background: white;
           }
+          /* Heading styles with consistent hierarchy */
           h1, h2, h3, h4, h5, h6 {
             margin-top: 24px;
             margin-bottom: 16px;
@@ -46,9 +58,11 @@ export async function POST(request: NextRequest) {
           h4 { font-size: 1em; }
           h5 { font-size: 0.875em; }
           h6 { font-size: 0.85em; color: #6a737d; }
+          /* Paragraph and list spacing */
           p { margin-bottom: 16px; }
           ul, ol { padding-left: 2em; margin-bottom: 16px; }
           li { margin-bottom: 4px; }
+          /* Inline and block code styling */
           code {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
             background-color: #f6f8fa;
@@ -77,6 +91,7 @@ export async function POST(request: NextRequest) {
             padding: 0;
             word-wrap: normal;
           }
+          /* Blockquote and table styling */
           blockquote {
             border-left: 4px solid #dfe2e5;
             padding: 0 16px;
@@ -100,6 +115,7 @@ export async function POST(request: NextRequest) {
           table tr:nth-child(2n) {
             background-color: #f6f8fa;
           }
+          /* Link and media styling */
           a {
             color: #0366d6;
             text-decoration: none;
@@ -111,6 +127,7 @@ export async function POST(request: NextRequest) {
             max-width: 100%;
             height: auto;
           }
+          /* Horizontal rule styling */
           hr {
             border: none;
             border-top: 1px solid #eaecef;
@@ -126,23 +143,24 @@ export async function POST(request: NextRequest) {
     `;
 
     // Launch Puppeteer with Windows-compatible configuration
+    // These flags ensure compatibility across different environments
     let browser;
     try {
       browser = await puppeteer.launch({
-        headless: true,
+        headless: true, // Run in headless mode for server environments
         args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--disable-gpu',
-          '--disable-extensions',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding'
+          '--no-sandbox',           // Required for running in containers/Linux
+          '--disable-setuid-sandbox', // Additional sandbox security
+          '--disable-dev-shm-usage',  // Prevent memory issues in Docker
+          '--disable-accelerated-2d-canvas', // Reduce GPU dependency
+          '--no-first-run',          // Skip first-run setup
+          '--disable-gpu',           // Disable GPU acceleration
+          '--disable-extensions',     // Disable browser extensions
+          '--disable-background-timer-throttling', // Prevent timing issues
+          '--disable-backgrounding-occluded-windows', // Windows compatibility
+          '--disable-renderer-backgrounding' // Prevent background rendering
         ],
-        timeout: 30000
+        timeout: 30000 // 30 second timeout for browser launch
       });
     } catch (error) {
       console.error('Failed to launch browser:', error);
@@ -152,34 +170,38 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
+    // Create new page for PDF generation
     const page = await browser.newPage();
 
-    // Set content and wait for it to load
+    // Set HTML content and wait for all resources to load
+    // networkidle0 ensures no more than 0 network connections for 500ms
     await page.setContent(htmlDocument, { waitUntil: 'networkidle0' });
 
-    // Generate PDF
+    // Generate PDF with A4 format and professional margins
     const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
+      format: 'A4',              // Standard paper size
+      printBackground: true,     // Include background colors and images
       margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm'
+        top: '20mm',    // Top margin
+        right: '20mm',  // Right margin
+        bottom: '20mm', // Bottom margin
+        left: '20mm'    // Left margin
       }
     });
 
+    // Clean up browser instance to free memory
     await browser.close();
 
-    // Return PDF as response
+    // Return PDF as downloadable file response
     return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="converted.pdf"'
+        'Content-Type': 'application/pdf',                      // PDF MIME type
+        'Content-Disposition': 'attachment; filename="converted.pdf"' // Trigger download
       }
     });
 
   } catch (error) {
+    // Global error handler for any unexpected errors during conversion
     console.error('Error generating PDF:', error);
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }

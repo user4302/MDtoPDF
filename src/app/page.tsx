@@ -4,24 +4,45 @@ import { useState } from 'react';
 
 /**
  * Main Markdown to PDF converter component
- * Provides UI for markdown input, file upload, and PDF conversion
+ * 
+ * This component provides a complete user interface for:
+ * - Markdown text input with syntax highlighting placeholder
+ * - File upload functionality for .md files
+ * - PDF conversion via API endpoint
+ * - Responsive design with modern UI/UX
+ * 
+ * Uses React hooks for state management and handles all user interactions
+ * including form validation, file reading, and PDF download.
  */
 export default function Home() {
+  // State for storing markdown content from user input or file upload
   const [markdown, setMarkdown] = useState('');
+  // Loading state to show conversion progress and prevent duplicate requests
   const [isConverting, setIsConverting] = useState(false);
 
   /**
    * Handles the conversion of markdown content to PDF
-   * Sends markdown to API endpoint and downloads the resulting PDF
+   * 
+   * Process flow:
+   * 1. Validate markdown input is not empty
+   * 2. Send POST request to /api/convert endpoint
+   * 3. Handle successful response by creating download link
+   * 4. Handle errors with user-friendly messages
+   * 5. Clean up resources and reset loading state
+   * 
+   * @returns Promise<void> - No return value, handles side effects
    */
   const handleConvertToPdf = async () => {
+    // Early validation to prevent empty submissions
     if (!markdown.trim()) {
       alert('Please enter some markdown content');
       return;
     }
 
+    // Set loading state to disable button and show progress
     setIsConverting(true);
     try {
+      // Send markdown content to conversion API
       const response = await fetch('/api/convert', {
         method: 'POST',
         headers: {
@@ -31,17 +52,22 @@ export default function Home() {
       });
 
       if (response.ok) {
+        // Convert response to blob for file download
         const blob = await response.blob();
+        // Create temporary URL for blob to enable download
         const url = window.URL.createObjectURL(blob);
+        // Create hidden anchor element for programmatic download
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = 'converted.pdf';
+        // Trigger download and clean up resources
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url); // Free memory
+        document.body.removeChild(a); // Remove temporary element
       } else {
+        // Parse error response and show detailed error message
         const errorData = await response.json();
         const errorMessage = errorData.details ?
           `${errorData.error}: ${errorData.details}` :
@@ -49,19 +75,33 @@ export default function Home() {
         alert(errorMessage);
       }
     } catch (error) {
+      // Log technical error for debugging and show user-friendly message
       console.error('Error converting to PDF:', error);
       alert('Error converting to PDF');
     } finally {
+      // Always reset loading state regardless of success or failure
       setIsConverting(false);
     }
   };
 
   /**
    * Handles file upload for markdown files (.md)
-   * Reads file content and updates the markdown state
+   * 
+   * Supports both:
+   * - Files with MIME type 'text/markdown'
+   * - Files with .md extension (fallback for systems without proper MIME type)
+   * 
+   * Process:
+   * 1. Validate file type and extension
+   * 2. Use FileReader API to read file as text
+   * 3. Update markdown state with file content
+   * 4. Show error for unsupported file types
+   * 
+   * @param event - File input change event containing selected file
    */
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    // Primary check: proper MIME type for markdown files
     if (file && file.type === 'text/markdown') {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -69,7 +109,8 @@ export default function Home() {
         setMarkdown(content);
       };
       reader.readAsText(file);
-    } else if (file && file.name.endsWith('.md')) {
+    } // Fallback check: .md extension for systems without MIME type support
+    else if (file && file.name.endsWith('.md')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
@@ -77,6 +118,7 @@ export default function Home() {
       };
       reader.readAsText(file);
     } else {
+      // User feedback for unsupported file types
       alert('Please upload a markdown file (.md)');
     }
   };
