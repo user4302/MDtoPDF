@@ -7,6 +7,10 @@ A modern web-based tool that converts Markdown files to professional PDF format 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black.svg)
 ![React](https://img.shields.io/badge/React-19.2.4-blue.svg)
 
+## 🚀 Live Demo
+
+Try the live application: **https://user4302-mdtopdf.netlify.app/**
+
 ## Features ✨
 
 - 📝 **Easy Input**: Type markdown directly or upload .md files with drag-and-drop support
@@ -75,24 +79,23 @@ npm run dev
 ## Project Structure 📂
 
 ```
-mdtopdf/
-├── src/
-│   └── app/
-│       ├── api/
-│       │   └── convert/
-│       │       └── route.ts      # PDF conversion API endpoint
-│       ├── globals.css           # Global styles with Tailwind
-│       ├── layout.tsx            # Root layout component
-│       └── page.tsx              # Main converter UI
-├── public/                      # Static assets
-├── .gitignore                   # Git ignore patterns
-├── CHANGELOG.md                 # Version history
-├── eslint.config.mjs           # ESLint configuration
-├── netlify.toml                # Netlify deployment config
-├── next.config.ts              # Next.js configuration
-├── package.json                # Dependencies and scripts
-├── postcss.config.mjs          # PostCSS configuration
-└── tsconfig.json               # TypeScript configuration
+src/
+└── app/
+    ├── api/
+    │   └── convert/
+    │       └── route.ts      # PDF conversion API endpoint
+    ├── globals.css           # Global styles with Tailwind
+    ├── layout.tsx            # Root layout component
+    └── page.tsx              # Main converter UI
+public/                      # Static assets
+.gitignore                   # Git ignore patterns
+CHANGELOG.md                 # Version history
+eslint.config.mjs           # ESLint configuration
+netlify.toml                # Netlify deployment config
+next.config.ts              # Next.js configuration
+package.json                # Dependencies and scripts
+postcss.config.mjs          # PostCSS configuration
+tsconfig.json               # TypeScript configuration
 ```
 
 ## Configuration 🔧
