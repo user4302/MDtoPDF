@@ -142,12 +142,16 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Launch Puppeteer with Windows-compatible configuration
-    // These flags ensure compatibility across different environments
+    // Launch Puppeteer with serverless-compatible configuration
+    // Use Chrome executable path that works on Netlify's serverless environment
     let browser;
     try {
       browser = await puppeteer.launch({
         headless: true, // Run in headless mode for server environments
+        executablePath: process.env.CHROME_EXECUTABLE_PATH ||
+          (process.platform === 'win32' ? undefined :
+            process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' :
+              '/usr/bin/chromium-browser'),
         args: [
           '--no-sandbox',           // Required for running in containers/Linux
           '--disable-setuid-sandbox', // Additional sandbox security
@@ -158,7 +162,9 @@ export async function POST(request: NextRequest) {
           '--disable-extensions',     // Disable browser extensions
           '--disable-background-timer-throttling', // Prevent timing issues
           '--disable-backgrounding-occluded-windows', // Windows compatibility
-          '--disable-renderer-backgrounding' // Prevent background rendering
+          '--disable-renderer-backgrounding', // Prevent background rendering
+          '--single-process',        // Run in single process mode for serverless
+          '--no-zygote'              // Disable zygote process
         ],
         timeout: 30000 // 30 second timeout for browser launch
       });
