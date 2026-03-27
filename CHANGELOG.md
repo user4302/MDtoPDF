@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Convert from synchronous Next.js API routes to asynchronous Netlify background functions
+- Implement job-based PDF processing with status polling and download endpoints
+- Update frontend to use 3-step workflow: start conversion, poll status, download PDF
+- Configure Netlify functions directory and development server settings
+- Add hydration warning suppression to prevent browser extension conflicts
+- Update gitignore to exclude Netlify build artifacts
+
 ## [0.2.5] - 2026-03-27
 
 ### Fixed

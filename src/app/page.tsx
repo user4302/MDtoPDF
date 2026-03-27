@@ -42,8 +42,8 @@ export default function Home() {
     // Set loading state to disable button and show progress
     setIsConverting(true);
     try {
-      // Send markdown content to conversion API
-      const response = await fetch('/api/convert', {
+      // Step 1: Start conversion job
+      const response = await fetch('/.netlify/functions/convert', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,34 +52,77 @@ export default function Home() {
       });
 
       if (response.ok) {
-        // Convert response to blob for file download
-        const blob = await response.blob();
-        // Create temporary URL for blob to enable download
-        const url = window.URL.createObjectURL(blob);
-        // Create hidden anchor element for programmatic download
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'converted.pdf';
-        // Trigger download and clean up resources
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url); // Free memory
-        document.body.removeChild(a); // Remove temporary element
+        // Debug: Check response content
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        let jobData;
+        try {
+          jobData = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse JSON:', e);
+          console.error('Response was:', responseText);
+          alert('Invalid response from server');
+          setIsConverting(false);
+          return;
+        }
+
+        const jobId = jobData.jobId;
+
+        // Step 2: Poll for job completion
+        const pollForCompletion = async () => {
+          try {
+            const statusResponse = await fetch(`/.netlify/functions/pdf-status?id=${jobId}`);
+            const statusData = await statusResponse.json();
+
+            if (statusData.status === 'completed') {
+              // Step 3: Download the completed PDF
+              const downloadResponse = await fetch(`/.netlify/functions/pdf-download?id=${jobId}`);
+              const blob = await downloadResponse.blob();
+
+              // Create temporary URL for blob to enable download
+              const url = window.URL.createObjectURL(blob);
+              // Create hidden anchor element for programmatic download
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = 'converted.pdf';
+              // Trigger download and clean up resources
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url); // Free memory
+              document.body.removeChild(a); // Remove temporary element
+              setIsConverting(false);
+            } else if (statusData.status === 'expired') {
+              alert('PDF conversion job expired. Please try again.');
+              setIsConverting(false);
+            } else {
+              // Still processing, poll again after 2 seconds
+              setTimeout(pollForCompletion, 2000);
+            }
+          } catch (error) {
+            console.error('Error checking job status:', error);
+            alert('Error checking PDF conversion status');
+            setIsConverting(false);
+          }
+        };
+
+        // Start polling
+        setTimeout(pollForCompletion, 2000);
+
       } else {
         // Parse error response and show detailed error message
         const errorData = await response.json();
         const errorMessage = errorData.details ?
           `${errorData.error}: ${errorData.details}` :
-          errorData.error || 'Failed to convert to PDF';
+          errorData.error || 'Failed to start PDF conversion';
         alert(errorMessage);
+        setIsConverting(false);
       }
     } catch (error) {
       // Log technical error for debugging and show user-friendly message
       console.error('Error converting to PDF:', error);
       alert('Error converting to PDF');
-    } finally {
-      // Always reset loading state regardless of success or failure
       setIsConverting(false);
     }
   };

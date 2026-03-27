@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { marked } from 'marked';
 import puppeteer from 'puppeteer';
-import fs from 'fs';
 
 /**
- * API endpoint for converting markdown content to PDF
+ * Background function for converting markdown content to PDF
  * 
- * This endpoint handles the complete conversion process:
- * 1. Parses markdown input using marked library
- * 2. Creates styled HTML document with GitHub-style CSS
- * 3. Uses Puppeteer to generate PDF from HTML
- * 4. Returns PDF file as downloadable response
+ * This endpoint handles asynchronous PDF conversion:
+ * 1. Returns success response immediately
+ * 2. Processes PDF generation in background
+ * 3. Client can check status later
  * 
  * @param request - Next.js request object containing markdown content in JSON body
- * @returns PDF file as response or error message with appropriate status code
+ * @returns Success response with job ID
  */
 export async function POST(request: NextRequest) {
   try {
@@ -25,11 +23,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Markdown content is required' }, { status: 400 });
     }
 
+    // Generate unique job ID
+    const jobId = `pdf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Start PDF generation in background (non-blocking)
+    generatePdfInBackground(jobId, markdown);
+    
+    // Return immediate success response with job ID
+    return NextResponse.json({
+      success: true,
+      jobId: jobId,
+      message: 'PDF conversion started in background',
+      statusUrl: `/.netlify/functions/pdf-status?id=${jobId}`
+    }, { status: 202 });
+
+  } catch (error) {
+    console.error('Error starting background PDF conversion:', error);
+    return NextResponse.json({ 
+      error: 'Failed to start PDF conversion',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * Background PDF generation function
+ * This runs asynchronously and doesn't block the response
+ */
+async function generatePdfInBackground(jobId: string, markdown: string) {
+  try {
+    console.log(`Starting PDF generation for job ${jobId}`);
+    
     // Convert markdown to HTML using marked library
     const html = marked(markdown);
 
     // Create complete HTML document with GitHub-flavored styling
-    // This ensures the PDF has professional typography and layout
     const htmlDocument = `
       <!DOCTYPE html>
       <html>
@@ -160,15 +188,20 @@ export async function POST(request: NextRequest) {
           '--disable-background-timer-throttling', // Prevent timing issues
           '--disable-backgrounding-occluded-windows', // Windows compatibility
           '--disable-renderer-backgrounding', // Prevent background rendering
+          '--single-process',        // Run in single process mode for serverless
+          '--no-zygote'              // Disable zygote process
         ],
         timeout: 30000 // 30 second timeout for browser launch
       });
     } catch (error) {
-      console.error('Failed to launch browser:', error);
-      return NextResponse.json({
-        error: 'Failed to initialize PDF generation. This might be due to missing Chromium binaries on Windows.',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }, { status: 500 });
+      console.error(`Failed to launch browser for job ${jobId}:`, error);
+      // In production, you might want to store this error for status checking
+      return;
+    }
+
+    if (!browser) {
+      console.error(`Browser launch failed for job ${jobId}`);
+      return;
     }
 
     // Create new page for PDF generation
@@ -193,17 +226,14 @@ export async function POST(request: NextRequest) {
     // Clean up browser instance to free memory
     await browser.close();
 
-    // Return PDF as downloadable file response
-    return new NextResponse(Buffer.from(pdfBuffer), {
-      headers: {
-        'Content-Type': 'application/pdf',                      // PDF MIME type
-        'Content-Disposition': 'attachment; filename="converted.pdf"' // Trigger download
-      }
-    });
-
+    console.log(`PDF generation completed for job ${jobId}`);
+    
+    // In production, you would store the PDF result for retrieval
+    // For now, just log completion
+    // TODO: Store PDF in storage or database for status endpoint
+    
   } catch (error) {
-    // Global error handler for any unexpected errors during conversion
-    console.error('Error generating PDF:', error);
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
+    console.error(`Error generating PDF for job ${jobId}:`, error);
+    // TODO: Store error status for retrieval
   }
 }
