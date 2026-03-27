@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Markdown to PDF Converter
+
+A web-based tool that converts Markdown files to PDF format with clean, professional styling. Built with Next.js and deployable on Netlify.
+
+## Features
+
+- 📝 **Easy Input**: Type markdown directly or upload .md files
+- ⚡ **Fast Conversion**: Instant PDF generation with high quality
+- 🎨 **Clean Output**: Professional-looking PDFs with proper styling
+- 📱 **Responsive Design**: Works on desktop and mobile devices
+- 🚀 **Netlify Ready**: Optimized for Netlify deployment
 
 ## Getting Started
 
-First, run the development server:
+### Local Development
 
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run the development server:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment on Netlify
+
+### Automatic Deployment
+
+1. Push your code to a GitHub repository
+2. Connect your repository to Netlify
+3. Netlify will automatically detect the Next.js app and deploy it
+
+### Manual Deployment
+
+1. Build the application:
+```bash
+npm run build
+```
+
+2. Deploy the `.next` folder to Netlify
+
+## Configuration
+
+The project includes a `netlify.toml` configuration file that handles:
+- Next.js build settings
+- Function routing for API endpoints
+- Puppeteer compatibility for serverless functions
+
+## Technology Stack
+
+- **Frontend**: Next.js 16, React 19, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **PDF Generation**: Puppeteer
+- **Markdown Parsing**: Marked.js
+- **Deployment**: Netlify
+
+## API Endpoint
+
+The application uses a POST endpoint at `/api/convert` that:
+- Accepts JSON with markdown content
+- Converts markdown to HTML
+- Generates PDF using Puppeteer
+- Returns PDF file for download
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
+- [Puppeteer Documentation](https://pptr.dev/) - learn about PDF generation
+- [Marked.js Documentation](https://marked.js.org/) - learn about markdown parsing
+- [Netlify Documentation](https://docs.netlify.com/) - learn about deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Your feedback and contributions are welcome! Feel free to submit issues and enhancement requests.
