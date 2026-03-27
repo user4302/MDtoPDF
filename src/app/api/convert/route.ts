@@ -148,7 +148,10 @@ export async function POST(request: NextRequest) {
     let browser;
     try {
       const possiblePaths = [
+        process.env.PUPPETEER_EXECUTABLE_PATH,
         process.env.CHROME_EXECUTABLE_PATH,
+        '/opt/buildhome/.puppeteer/chromium/chrome-linux/chrome',
+        '/opt/buildhome/.puppeteer/chromium/chrome',
         '/usr/bin/chromium',
         '/usr/bin/chromium-browser',
         '/usr/bin/google-chrome-stable',

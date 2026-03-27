@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2026-03-27
+
+### Fixed
+- Fixed Chrome binary installation on Netlify serverless environment
+- Added explicit Chrome download during Netlify build process
+- Resolved Chrome not found errors in serverless functions
+
+### Changed
+- Updated Netlify build command to install Chrome browsers
+- Configured Puppeteer environment variables for proper Chrome detection
+- Enhanced Chrome path detection with Netlify-specific paths
+
 ## [0.2.4] - 2025-10-19
 
 ### Fixed
