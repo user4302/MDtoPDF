@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { marked } from 'marked';
 import puppeteer from 'puppeteer';
+import fs from 'fs';
 
 /**
  * API endpoint for converting markdown content to PDF
@@ -143,15 +144,34 @@ export async function POST(request: NextRequest) {
     `;
 
     // Launch Puppeteer with serverless-compatible configuration
-    // Use Chrome executable path that works on Netlify's serverless environment
+    // Try multiple Chrome paths and fall back to bundled Chromium
     let browser;
     try {
+      const possiblePaths = [
+        process.env.CHROME_EXECUTABLE_PATH,
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/google-chrome',
+        '/snap/bin/chromium'
+      ].filter(Boolean);
+
+      let executablePath;
+      for (const path of possiblePaths) {
+        try {
+          if (path) {
+            fs.accessSync(path);
+            executablePath = path;
+            break;
+          }
+        } catch (e) {
+          // Path doesn't exist, try next one
+        }
+      }
+
       browser = await puppeteer.launch({
         headless: true, // Run in headless mode for server environments
-        executablePath: process.env.CHROME_EXECUTABLE_PATH ||
-          (process.platform === 'win32' ? undefined :
-            process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' :
-              '/usr/bin/chromium-browser'),
+        executablePath: executablePath, // Will be undefined if no system Chrome found
         args: [
           '--no-sandbox',           // Required for running in containers/Linux
           '--disable-setuid-sandbox', // Additional sandbox security

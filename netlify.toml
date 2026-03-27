@@ -4,7 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  CHROME_EXECUTABLE_PATH = "/usr/bin/chromium-browser"
+  CHROME_EXECUTABLE_PATH = "/usr/bin/chromium"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
