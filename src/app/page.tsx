@@ -43,7 +43,7 @@ export default function Home() {
     setIsConverting(true);
     try {
       // Step 1: Start conversion job
-      const response = await fetch('/.netlify/functions/convert', {
+      const response = await fetch('/api/convert', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,12 +72,12 @@ export default function Home() {
         // Step 2: Poll for job completion
         const pollForCompletion = async () => {
           try {
-            const statusResponse = await fetch(`/.netlify/functions/pdf-status?id=${jobId}`);
+            const statusResponse = await fetch(`/api/pdf-status?id=${jobId}`);
             const statusData = await statusResponse.json();
 
             if (statusData.status === 'completed') {
               // Step 3: Download the completed PDF
-              const downloadResponse = await fetch(`/.netlify/functions/pdf-download?id=${jobId}`);
+              const downloadResponse = await fetch(`/api/pdf-download?id=${jobId}`);
               const blob = await downloadResponse.blob();
 
               // Create temporary URL for blob to enable download
