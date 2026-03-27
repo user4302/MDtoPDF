@@ -1,11 +1,10 @@
 [build]
   publish = ".next"
-  command = "npm run build && npx puppeteer browsers install chrome"
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "20"
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "false"
-  PUPPETEER_EXECUTABLE_PATH = "/opt/buildhome/.puppeteer/chromium"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

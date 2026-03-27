@@ -144,37 +144,11 @@ export async function POST(request: NextRequest) {
     `;
 
     // Launch Puppeteer with serverless-compatible configuration
-    // Try multiple Chrome paths and fall back to bundled Chromium
+    // Use bundled Chromium that comes with puppeteer
     let browser;
     try {
-      const possiblePaths = [
-        process.env.PUPPETEER_EXECUTABLE_PATH,
-        process.env.CHROME_EXECUTABLE_PATH,
-        '/opt/buildhome/.puppeteer/chromium/chrome-linux/chrome',
-        '/opt/buildhome/.puppeteer/chromium/chrome',
-        '/usr/bin/chromium',
-        '/usr/bin/chromium-browser',
-        '/usr/bin/google-chrome-stable',
-        '/usr/bin/google-chrome',
-        '/snap/bin/chromium'
-      ].filter(Boolean);
-
-      let executablePath;
-      for (const path of possiblePaths) {
-        try {
-          if (path) {
-            fs.accessSync(path);
-            executablePath = path;
-            break;
-          }
-        } catch (e) {
-          // Path doesn't exist, try next one
-        }
-      }
-
       browser = await puppeteer.launch({
         headless: true, // Run in headless mode for server environments
-        executablePath: executablePath, // Will be undefined if no system Chrome found
         args: [
           '--no-sandbox',           // Required for running in containers/Linux
           '--disable-setuid-sandbox', // Additional sandbox security
@@ -186,8 +160,6 @@ export async function POST(request: NextRequest) {
           '--disable-background-timer-throttling', // Prevent timing issues
           '--disable-backgrounding-occluded-windows', // Windows compatibility
           '--disable-renderer-backgrounding', // Prevent background rendering
-          '--single-process',        // Run in single process mode for serverless
-          '--no-zygote'              // Disable zygote process
         ],
         timeout: 30000 // 30 second timeout for browser launch
       });
