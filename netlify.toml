@@ -10,12 +10,12 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "false"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["puppeteer", "@sparticuz/chromium"]
+  external_node_modules = ["puppeteer"]
   directory = "netlify/functions"

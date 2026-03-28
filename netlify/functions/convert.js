@@ -1,6 +1,5 @@
 const { marked } = require('marked');
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer');
 
 // Simple in-memory storage for testing (not for production)
 const pdfStorage = new Map();
@@ -222,13 +221,27 @@ async function generatePdfSync(markdown) {
     `;
 
     // Launch Puppeteer with serverless-compatible configuration
-    // Use @sparticuz/chromium for serverless environments
     let browser;
     try {
       browser = await puppeteer.launch({
-        args: chromium.args,
-        executablePath: await chromium.executablePath,
-        headless: chromium.headless,
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--disable-gpu',
+          '--disable-extensions',
+          '--single-process', // Important for serverless
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-features=VizDisplayCompositor',
+          '--timeout=60000'
+        ],
+        timeout: 60000,
+        protocolTimeout: 60000
       });
     } catch (error) {
       console.error('Failed to launch browser:', error);

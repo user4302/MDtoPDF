@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "dependencies": {
     "marked": "^17.0.5",
-    "puppeteer-core": "^10.4.0",
-    "@sparticuz/chromium": "^119.0.0"
+    "puppeteer": "^21.0.0"
   }
 }
