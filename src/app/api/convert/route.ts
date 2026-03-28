@@ -74,7 +74,8 @@ async function generatePdfSync(markdown: string) {
     // Import dependencies dynamically to avoid blocking
     console.log('📦 Importing dependencies...');
     const { marked } = await import('marked');
-    const puppeteer = await import('puppeteer');
+    const puppeteer = await import('puppeteer-core');
+    const chromium = await import('chrome-aws-lambda');
     console.log('✅ Dependencies imported successfully');
 
     // Convert markdown to HTML using marked library
@@ -204,27 +205,42 @@ async function generatePdfSync(markdown: string) {
     let browser;
     try {
       const puppeteerModule = puppeteer as any;
-      console.log('🔧 Browser launch args configured');
-      browser = await puppeteerModule.launch({
-        headless: 'new', // Use new headless mode
-        executablePath: undefined, // Use bundled Chromium, not system Chrome
-        args: [
-          '--no-sandbox',           // Required for running in containers/Linux
-          '--disable-setuid-sandbox', // Additional sandbox security
-          '--disable-dev-shm-usage',  // Prevent memory issues in Docker
-          '--disable-accelerated-2d-canvas', // Reduce GPU dependency
-          '--no-first-run',          // Skip first-run setup
-          '--disable-gpu',           // Disable GPU acceleration
-          '--disable-extensions',     // Disable browser extensions
-          '--disable-background-timer-throttling', // Prevent timing issues
-          '--disable-backgrounding-occluded-windows', // Windows compatibility
-          '--disable-renderer-backgrounding', // Prevent background rendering
-          '--disable-features=VizDisplayCompositor', // Fix for PDF generation
-          '--timeout=60000'         // Increase timeout
-        ],
-        timeout: 60000, // 60 second timeout for browser launch
-        protocolTimeout: 60000 // Protocol timeout
-      });
+      const chromiumModule = chromium as any;
+
+      // Check if we're in a serverless environment
+      const isServerless = process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+      if (isServerless) {
+        console.log('🔧 Using serverless configuration');
+        browser = await puppeteerModule.launch({
+          args: chromiumModule.args,
+          executablePath: await chromiumModule.executablePath,
+          headless: chromiumModule.headless,
+          ignoreDefaultArgs: false,
+        });
+      } else {
+        console.log('🔧 Using local development configuration');
+        browser = await puppeteerModule.launch({
+          headless: 'new', // Use new headless mode
+          executablePath: undefined, // Use bundled Chromium, not system Chrome
+          args: [
+            '--no-sandbox',           // Required for running in containers/Linux
+            '--disable-setuid-sandbox', // Additional sandbox security
+            '--disable-dev-shm-usage',  // Prevent memory issues in Docker
+            '--disable-accelerated-2d-canvas', // Reduce GPU dependency
+            '--no-first-run',          // Skip first-run setup
+            '--disable-gpu',           // Disable GPU acceleration
+            '--disable-extensions',     // Disable browser extensions
+            '--disable-background-timer-throttling', // Prevent timing issues
+            '--disable-backgrounding-occluded-windows', // Windows compatibility
+            '--disable-renderer-backgrounding', // Prevent background rendering
+            '--disable-features=VizDisplayCompositor', // Fix for PDF generation
+            '--timeout=60000'         // Increase timeout
+          ],
+          timeout: 60000, // 60 second timeout for browser launch
+          protocolTimeout: 60000 // Protocol timeout
+        });
+      }
       console.log('✅ Browser launched successfully');
     } catch (error) {
       console.error('❌ Failed to launch browser:', error);
