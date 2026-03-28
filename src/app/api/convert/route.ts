@@ -33,37 +33,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Markdown content is required' }, { status: 400 });
     }
 
-    // Generate unique job ID
-    const jobId = `pdf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate PDF immediately
+    const pdfBuffer = await generatePdfSync(markdown);
 
-    // Start PDF generation in background (non-blocking)
-    // Note: In production, this would use a background job queue
-    setTimeout(() => generatePdfInBackground(jobId, markdown), 100);
-
-    // Return immediate success response with job ID
-    return NextResponse.json({
-      success: true,
-      jobId: jobId,
-      message: 'PDF conversion started in background',
-      statusUrl: `/api/pdf-status?id=${jobId}`
+    // Return PDF directly for download
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': 'attachment; filename="converted.pdf"'
+      }
     });
 
   } catch (error) {
-    console.error('Error starting PDF conversion:', error);
+    console.error('Error generating PDF:', error);
     return NextResponse.json({
-      error: 'Failed to start PDF conversion',
+      error: 'Failed to generate PDF',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
 
 /**
- * Background PDF generation function
- * This runs asynchronously and doesn't block the response
+ * Immediate PDF generation function
+ * This runs synchronously and blocks the response
  */
-async function generatePdfInBackground(jobId: string, markdown: string) {
+async function generatePdfSync(markdown: string) {
   try {
-    console.log(`Starting PDF generation for job ${jobId}`);
+    console.log('Starting PDF generation');
 
     // Import dependencies dynamically to avoid blocking
     const { marked } = await import('marked');
@@ -241,27 +237,11 @@ async function generatePdfInBackground(jobId: string, markdown: string) {
     // Clean up browser instance to free memory
     await browser.close();
 
-    console.log(`PDF generation completed for job ${jobId}`);
+    console.log('PDF generation completed');
 
-    // Store PDF to file system for retrieval
-    const fs = require('fs');
-    const path = require('path');
-
-    // Create temp directory if it doesn't exist
-    const tempDir = path.join('/tmp', 'pdf-jobs');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    // Save job data to file
-    const jobFile = path.join(tempDir, `${jobId}.json`);
-    fs.writeFileSync(jobFile, JSON.stringify({
-      pdf: pdfBuffer.toString('base64'),
-      status: 'completed',
-      createdAt: Date.now()
-    }));
+    // PDF generation completed successfully
 
   } catch (error) {
-    console.error(`Error generating PDF for job ${jobId}:`, error);
+    console.error('Error generating PDF:', error);
   }
 }

@@ -42,7 +42,7 @@ export default function Home() {
     // Set loading state to disable button and show progress
     setIsConverting(true);
     try {
-      // Step 1: Start conversion job
+      // Convert markdown to PDF directly
       const response = await fetch('/api/convert', {
         method: 'POST',
         headers: {
@@ -52,63 +52,22 @@ export default function Home() {
       });
 
       if (response.ok) {
-        // Debug: Check response content
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
+        // Convert response to blob for file download
+        const blob = await response.blob();
 
-        let jobData;
-        try {
-          jobData = JSON.parse(responseText);
-        } catch (e) {
-          console.error('Failed to parse JSON:', e);
-          console.error('Response was:', responseText);
-          alert('Invalid response from server');
-          setIsConverting(false);
-          return;
-        }
-
-        const jobId = jobData.jobId;
-
-        // Step 2: Poll for job completion
-        const pollForCompletion = async () => {
-          try {
-            const statusResponse = await fetch(`/api/pdf-status?id=${jobId}`);
-            const statusData = await statusResponse.json();
-
-            if (statusData.status === 'completed') {
-              // Step 3: Download the completed PDF
-              const downloadResponse = await fetch(`/api/pdf-download?id=${jobId}`);
-              const blob = await downloadResponse.blob();
-
-              // Create temporary URL for blob to enable download
-              const url = window.URL.createObjectURL(blob);
-              // Create hidden anchor element for programmatic download
-              const a = document.createElement('a');
-              a.style.display = 'none';
-              a.href = url;
-              a.download = 'converted.pdf';
-              // Trigger download and clean up resources
-              document.body.appendChild(a);
-              a.click();
-              window.URL.revokeObjectURL(url); // Free memory
-              document.body.removeChild(a); // Remove temporary element
-              setIsConverting(false);
-            } else if (statusData.status === 'expired') {
-              alert('PDF conversion job expired. Please try again.');
-              setIsConverting(false);
-            } else {
-              // Still processing, poll again after 2 seconds
-              setTimeout(pollForCompletion, 2000);
-            }
-          } catch (error) {
-            console.error('Error checking job status:', error);
-            alert('Error checking PDF conversion status');
-            setIsConverting(false);
-          }
-        };
-
-        // Start polling
-        setTimeout(pollForCompletion, 2000);
+        // Create temporary URL for blob to enable download
+        const url = window.URL.createObjectURL(blob);
+        // Create hidden anchor element for programmatic download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'converted.pdf';
+        // Trigger download and clean up resources
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url); // Free memory
+        document.body.removeChild(a); // Remove temporary element
+        setIsConverting(false);
 
       } else {
         // Parse error response and show detailed error message
