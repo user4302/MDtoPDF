@@ -1,6 +1,6 @@
 const { marked } = require('marked');
 const puppeteer = require('puppeteer-core');
-const chromium = require('chrome-aws-lambda');
+const chromium = require('@sparticuz/chromium');
 
 // Simple in-memory storage for testing (not for production)
 const pdfStorage = new Map();
@@ -222,14 +222,13 @@ async function generatePdfSync(markdown) {
     `;
 
     // Launch Puppeteer with serverless-compatible configuration
-    // Use chrome-aws-lambda for serverless environments
+    // Use @sparticuz/chromium for serverless environments
     let browser;
     try {
       browser = await puppeteer.launch({
         args: chromium.args,
         executablePath: await chromium.executablePath,
         headless: chromium.headless,
-        ignoreDefaultArgs: false,
       });
     } catch (error) {
       console.error('Failed to launch browser:', error);

@@ -4,6 +4,6 @@
   "dependencies": {
     "marked": "^17.0.5",
     "puppeteer-core": "^10.4.0",
-    "chrome-aws-lambda": "^10.1.0"
+    "@sparticuz/chromium": "^119.0.0"
   }
 }

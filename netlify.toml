@@ -17,5 +17,5 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["puppeteer", "chrome-aws-lambda"]
+  external_node_modules = ["puppeteer", "@sparticuz/chromium"]
   directory = "netlify/functions"
