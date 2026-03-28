@@ -30,9 +30,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Job ID is required' }, { status: 400 });
     }
 
-    // Check if we have the job in storage
-    global.pdfStorage = global.pdfStorage || new Map<string, PdfJob>();
-    const jobData = global.pdfStorage.get(jobId);
+    // Check if we have the job in file system storage
+    const fs = require('fs');
+    const path = require('path');
+
+    const tempDir = path.join('/tmp', 'pdf-jobs');
+    const jobFile = path.join(tempDir, `${jobId}.json`);
+
+    if (!fs.existsSync(jobFile)) {
+      return NextResponse.json({
+        error: 'PDF not found or still processing',
+        jobId,
+        status: 'not_found'
+      }, { status: 404 });
+    }
+
+    const jobData = JSON.parse(fs.readFileSync(jobFile, 'utf8'));
 
     if (!jobData) {
       return NextResponse.json({
@@ -62,7 +75,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return the actual PDF
-    const pdfBuffer = Buffer.isBuffer(jobData.pdf) ? jobData.pdf : Buffer.from(jobData.pdf);
+    const pdfBuffer = Buffer.from(jobData.pdf, 'base64');
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',

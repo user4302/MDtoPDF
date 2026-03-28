@@ -243,13 +243,23 @@ async function generatePdfInBackground(jobId: string, markdown: string) {
 
     console.log(`PDF generation completed for job ${jobId}`);
 
-    // Store PDF in memory for retrieval (in production, use database/storage)
-    global.pdfStorage = global.pdfStorage || new Map<string, PdfJob>();
-    global.pdfStorage.set(jobId, {
-      pdf: pdfBuffer,
+    // Store PDF to file system for retrieval
+    const fs = require('fs');
+    const path = require('path');
+
+    // Create temp directory if it doesn't exist
+    const tempDir = path.join('/tmp', 'pdf-jobs');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    // Save job data to file
+    const jobFile = path.join(tempDir, `${jobId}.json`);
+    fs.writeFileSync(jobFile, JSON.stringify({
+      pdf: pdfBuffer.toString('base64'),
       status: 'completed',
       createdAt: Date.now()
-    });
+    }));
 
   } catch (error) {
     console.error(`Error generating PDF for job ${jobId}:`, error);
