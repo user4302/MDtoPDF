@@ -3,7 +3,7 @@
 A modern web-based tool that converts Markdown files to professional PDF format with clean styling and instant processing. Built with Next.js and optimized for serverless deployment.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-0.3.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.4.0-green.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black.svg)
 ![React](https://img.shields.io/badge/React-19.2.4-blue.svg)
 
