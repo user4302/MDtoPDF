@@ -34,7 +34,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate PDF immediately
+    console.log('About to call generatePdfSync...');
     const pdfBuffer = await generatePdfSync(markdown);
+    console.log('generatePdfSync returned, buffer length:', pdfBuffer?.length || 'undefined');
+
+    if (!pdfBuffer) {
+      return NextResponse.json({
+        error: 'Failed to generate PDF - no buffer returned'
+      }, { status: 500 });
+    }
 
     // Return PDF directly for download
     return new NextResponse(new Uint8Array(pdfBuffer), {
@@ -59,16 +67,25 @@ export async function POST(request: NextRequest) {
  */
 async function generatePdfSync(markdown: string) {
   try {
-    console.log('Starting PDF generation');
+    console.log('🚀 Starting PDF generation');
+    console.log('📝 Input markdown length:', markdown.length);
+    console.log('📝 Input markdown preview:', markdown.substring(0, 100) + '...');
 
     // Import dependencies dynamically to avoid blocking
+    console.log('📦 Importing dependencies...');
     const { marked } = await import('marked');
     const puppeteer = await import('puppeteer');
+    console.log('✅ Dependencies imported successfully');
 
     // Convert markdown to HTML using marked library
-    const html = marked(markdown);
+    console.log('🔄 Converting markdown to HTML...');
+    const html = await marked(markdown);
+    console.log('✅ HTML conversion completed');
+    console.log('📄 Generated HTML length:', html.length);
+    console.log('📄 Generated HTML preview:', html.substring(0, 200) + '...');
 
     // Create complete HTML document with GitHub-flavored styling
+    console.log('🎨 Creating HTML document with styling...');
     const htmlDocument = `
       <!DOCTYPE html>
       <html>
@@ -183,9 +200,11 @@ async function generatePdfSync(markdown: string) {
     `;
 
     // Launch Puppeteer with serverless-compatible configuration
+    console.log('🌐 Launching Puppeteer browser...');
     let browser;
     try {
       const puppeteerModule = puppeteer as any;
+      console.log('🔧 Browser launch args configured');
       browser = await puppeteerModule.launch({
         headless: 'new', // Use new headless mode
         args: [
@@ -205,23 +224,29 @@ async function generatePdfSync(markdown: string) {
         timeout: 60000, // 60 second timeout for browser launch
         protocolTimeout: 60000 // Protocol timeout
       });
+      console.log('✅ Browser launched successfully');
     } catch (error) {
-      console.error('Failed to launch browser:', error);
-      return;
+      console.error('❌ Failed to launch browser:', error);
+      throw error;
     }
 
     if (!browser) {
-      console.error('Browser launch failed');
-      return;
+      console.error('❌ Browser launch failed - browser is null');
+      throw new Error('Browser launch failed');
     }
 
     // Create new page for PDF generation
+    console.log('📄 Creating new page...');
     const page = await browser.newPage();
+    console.log('✅ Page created successfully');
 
     // Set HTML content and wait for all resources to load
+    console.log('📝 Setting HTML content...');
     await page.setContent(htmlDocument, { waitUntil: 'networkidle0' });
+    console.log('✅ HTML content set successfully');
 
     // Generate PDF with A4 format and professional margins
+    console.log('📊 Generating PDF...');
     const pdfArrayBuffer = await page.pdf({
       format: 'A4',              // Standard paper size
       printBackground: true,     // Include background colors and images
@@ -233,11 +258,16 @@ async function generatePdfSync(markdown: string) {
       },
       timeout: 60000 // PDF generation timeout
     });
+    console.log('✅ PDF generated successfully');
+    console.log('📏 PDF buffer length:', pdfArrayBuffer.length);
+    console.log('📏 PDF buffer type:', typeof pdfArrayBuffer);
 
     // Clean up browser instance to free memory
+    console.log('🧹 Cleaning up browser...');
     await browser.close();
+    console.log('✅ Browser cleanup completed');
 
-    console.log('PDF generation completed');
+    console.log('🎉 PDF generation completed successfully');
 
     // Return the PDF buffer for the main function to use
     return pdfArrayBuffer;
@@ -245,6 +275,9 @@ async function generatePdfSync(markdown: string) {
     // PDF generation completed successfully
 
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('❌ Error generating PDF:', error);
+    console.error('❌ Error details:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack available');
+    throw error; // Re-throw to let the main function handle it
   }
 }
