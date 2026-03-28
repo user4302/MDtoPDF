@@ -21,11 +21,11 @@ export default function Home() {
   const [isConverting, setIsConverting] = useState(false);
 
   /**
-   * Handles the conversion of markdown content to PDF
+   * Handles conversion of markdown content to PDF
    * 
    * Process flow:
    * 1. Validate markdown input is not empty
-   * 2. Send POST request to /api/convert endpoint
+   * 2. Send POST request to appropriate endpoint based on environment
    * 3. Handle successful response by creating download link
    * 4. Handle errors with user-friendly messages
    * 5. Clean up resources and reset loading state
@@ -42,8 +42,15 @@ export default function Home() {
     // Set loading state to disable button and show progress
     setIsConverting(true);
     try {
+      // Determine the correct endpoint based on environment
+      const isNetlify = window.location.hostname.includes('netlify.app') ||
+        window.location.hostname.includes('netlify.com');
+      const endpoint = isNetlify ? '/.netlify/functions/convert' : '/api/convert';
+
+      console.log(`Using endpoint: ${endpoint}`);
+
       // Convert markdown to PDF directly
-      const response = await fetch('/api/convert', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
