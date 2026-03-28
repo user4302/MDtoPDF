@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Type definition for our PDF job storage
+interface PdfJob {
+  pdf: Buffer;
+  status: 'processing' | 'completed';
+  createdAt: number;
+}
+
+// Type definition for global storage extension
+declare global {
+  var pdfStorage: Map<string, PdfJob> | undefined;
+}
+
 /**
  * Download endpoint for completed PDF files
  * 
@@ -19,8 +31,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if we have the job in storage
-    (globalThis as any).pdfStorage = (globalThis as any).pdfStorage || new Map();
-    const jobData = (globalThis as any).pdfStorage.get(jobId);
+    global.pdfStorage = global.pdfStorage || new Map<string, PdfJob>();
+    const jobData = global.pdfStorage.get(jobId);
 
     if (!jobData) {
       return NextResponse.json({
@@ -32,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // Check job age for expiration
     const jobAge = Date.now() - jobData.createdAt;
-    
+
     if (jobAge > 60000) { // More than 1 minute
       return NextResponse.json({
         error: 'PDF expired or not found',
@@ -50,7 +62,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Return the actual PDF
-    return new NextResponse(jobData.pdf, {
+    const pdfBuffer = Buffer.isBuffer(jobData.pdf) ? jobData.pdf : Buffer.from(jobData.pdf);
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="converted-${jobId}.pdf"`

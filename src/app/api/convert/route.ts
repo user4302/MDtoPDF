@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Type definition for our PDF job storage
+interface PdfJob {
+  pdf: Buffer;
+  status: 'processing' | 'completed';
+  createdAt: number;
+}
+
+// Type definition for global storage extension
+declare global {
+  var pdfStorage: Map<string, PdfJob> | undefined;
+}
+
 /**
  * API endpoint for converting markdown content to PDF
  * 
@@ -23,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Generate unique job ID
     const jobId = `pdf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Start PDF generation in background (non-blocking)
     // Note: In production, this would use a background job queue
     setTimeout(() => generatePdfInBackground(jobId, markdown), 100);
@@ -38,7 +50,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error starting PDF conversion:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Failed to start PDF conversion',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
@@ -52,7 +64,7 @@ export async function POST(request: NextRequest) {
 async function generatePdfInBackground(jobId: string, markdown: string) {
   try {
     console.log(`Starting PDF generation for job ${jobId}`);
-    
+
     // Import dependencies dynamically to avoid blocking
     const { marked } = await import('marked');
     const puppeteer = await import('puppeteer');
@@ -230,9 +242,9 @@ async function generatePdfInBackground(jobId: string, markdown: string) {
     await browser.close();
 
     console.log(`PDF generation completed for job ${jobId}`);
-    
+
     // Store PDF in memory for retrieval (in production, use database/storage)
-    global.pdfStorage = global.pdfStorage || new Map();
+    global.pdfStorage = global.pdfStorage || new Map<string, PdfJob>();
     global.pdfStorage.set(jobId, {
       pdf: pdfBuffer,
       status: 'completed',
