@@ -207,6 +207,7 @@ async function generatePdfSync(markdown: string) {
       console.log('🔧 Browser launch args configured');
       browser = await puppeteerModule.launch({
         headless: 'new', // Use new headless mode
+        executablePath: undefined, // Use bundled Chromium, not system Chrome
         args: [
           '--no-sandbox',           // Required for running in containers/Linux
           '--disable-setuid-sandbox', // Additional sandbox security
