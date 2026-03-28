@@ -206,12 +206,12 @@ async function generatePdfSync(markdown: string) {
         protocolTimeout: 60000 // Protocol timeout
       });
     } catch (error) {
-      console.error(`Failed to launch browser for job ${jobId}:`, error);
+      console.error('Failed to launch browser:', error);
       return;
     }
 
     if (!browser) {
-      console.error(`Browser launch failed for job ${jobId}`);
+      console.error('Browser launch failed');
       return;
     }
 
@@ -222,7 +222,7 @@ async function generatePdfSync(markdown: string) {
     await page.setContent(htmlDocument, { waitUntil: 'networkidle0' });
 
     // Generate PDF with A4 format and professional margins
-    const pdfBuffer = await page.pdf({
+    const pdfArrayBuffer = await page.pdf({
       format: 'A4',              // Standard paper size
       printBackground: true,     // Include background colors and images
       margin: {
@@ -238,6 +238,9 @@ async function generatePdfSync(markdown: string) {
     await browser.close();
 
     console.log('PDF generation completed');
+
+    // Return the PDF buffer for the main function to use
+    return pdfArrayBuffer;
 
     // PDF generation completed successfully
 
