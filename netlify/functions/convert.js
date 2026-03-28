@@ -232,14 +232,13 @@ async function generatePdfSync(markdown) {
         ignoreDefaultArgs: false,
       });
     } catch (error) {
-      console.error(`Failed to launch browser for job ${jobId}:`, error);
-      // In production, you might want to store this error for status checking
-      return;
+      console.error('Failed to launch browser:', error);
+      throw error;
     }
 
     if (!browser) {
-      console.error(`Browser launch failed for job ${jobId}`);
-      return;
+      console.error('Browser launch failed');
+      throw new Error('Browser launch failed');
     }
 
     // Create new page for PDF generation
