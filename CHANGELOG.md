@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-03-28
+
+### Fixed
+- Resolved Netlify deployment failures caused by Chromium binary size exceeding 50MB function limit
+- Fixed serverless environment compatibility issues with Puppeteer browser launch
+
+### Changed
+- Migrated from regular `puppeteer` to `puppeteer-core` + `chrome-aws-lambda` for serverless compatibility
+- Updated Netlify function to use compressed Chromium binary designed for AWS Lambda environments
+- Added environment detection to automatically switch between local and serverless configurations
+- Updated `netlify.toml` to external chrome-aws-lambda module for proper bundling
+- Maintained all existing PDF styling and generation parameters
+
+### Dependencies
+- Added puppeteer-core@10.4.0 (lightweight Puppeteer without bundled Chromium)
+- Added chrome-aws-lambda@10.1.0 (compressed Chromium for serverless environments)
+
 ## [0.3.0] - 2026-03-27
 
 ### Changed
