@@ -66,18 +66,69 @@ export default function Home() {
       // Step 2: Get HTML content from response
       const htmlContent = await response.text();
 
-      // Step 3: Create temporary DOM element for rendering
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      tempDiv.style.top = '0';
+      /**
+   * Creates an isolated iframe to prevent CSS conflicts during PDF generation
+   * 
+   * This approach completely separates the temporary HTML content from the main
+   * document to prevent any layout shifts or styling interference.
+   */
+      const createIsolatedIframe = () => {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = 'auto';
+        iframe.style.border = 'none';
+        iframe.style.visibility = 'hidden';
+        iframe.style.pointerEvents = 'none';
+        return iframe;
+      };
+
+      /**
+       * Safely writes HTML content to iframe document
+       * 
+       * @param iframe - The iframe element to write content to
+       * @param htmlContent - The HTML content to write
+       * @returns Promise that resolves when content is written
+       */
+      const writeContentToIframe = async (iframe: HTMLIFrameElement, htmlContent: string) => {
+        document.body.appendChild(iframe);
+
+        // Wait for iframe to load and then set content
+        await new Promise<void>((resolve) => {
+          iframe.onload = () => resolve();
+          setTimeout(() => resolve(), 100); // Fallback timeout
+        });
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!iframeDoc) {
+          throw new Error('Failed to access iframe document');
+        }
+
+        // Write the HTML content to iframe
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+
+        return iframeDoc;
+      };
+
+      // Step 3: Create isolated iframe for completely separate DOM context
+      const iframe = createIsolatedIframe();
+      const iframeDoc = await writeContentToIframe(iframe, htmlContent);
+
+      // Get the body element for canvas capture
+      const tempDiv = iframeDoc.body;
       tempDiv.style.width = '800px';
       tempDiv.style.backgroundColor = 'white';
       tempDiv.style.padding = '40px 20px';
-      tempDiv.innerHTML = htmlContent;
-      document.body.appendChild(tempDiv);
+      tempDiv.style.boxSizing = 'border-box';
 
       try {
+        // Small delay to ensure DOM is properly rendered
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Step 4: Convert HTML to canvas using html2canvas
         const canvas = await html2canvas(tempDiv, {
           scale: 2, // Higher resolution for better quality
@@ -85,7 +136,11 @@ export default function Home() {
           allowTaint: true,
           backgroundColor: '#ffffff',
           width: 800,
-          windowWidth: 800
+          height: tempDiv.scrollHeight,
+          windowWidth: 800,
+          windowHeight: tempDiv.scrollHeight,
+          scrollX: 0,
+          scrollY: 0
         });
 
         // Step 5: Create PDF from canvas using jsPDF
@@ -113,8 +168,8 @@ export default function Home() {
         pdf.save('converted.pdf');
 
       } finally {
-        // Step 7: Clean up temporary DOM element
-        document.body.removeChild(tempDiv);
+        // Step 7: Clean up iframe
+        document.body.removeChild(iframe);
       }
 
     } catch (error) {
