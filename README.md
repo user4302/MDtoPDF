@@ -17,17 +17,16 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - ⚡ **Fast Conversion**: Instant PDF generation with high-quality rendering
 - 🎨 **Clean Output**: Professional-looking PDFs with GitHub-flavored styling
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
-- 🚀 **Serverless Ready**: Optimized for Netlify and other serverless platforms
-- 🔒 **Secure Processing**: Client-side validation with server-side conversion
+- 🚀 **Client-Side Processing**: No server dependencies, works entirely in your browser
+- 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
 - 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls
 
 ## Tech Stack / Built With 🛠️
 
-![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black) ![React](https://img.shields.io/badge/React-19.2.4-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC) ![Puppeteer](https://img.shields.io/badge/Puppeteer-24.40.0-green) ![Marked](https://img.shields.io/badge/Marked-17.0.5-yellow)
+![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black) ![React](https://img.shields.io/badge/React-19.2.4-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC) ![jsPDF](https://img.shields.io/badge/jsPDF-latest-orange) ![html2canvas](https://img.shields.io/badge/html2canvas-latest-blue) ![Marked](https://img.shields.io/badge/Marked-17.0.5-yellow)
 
 - **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS v4
-- **Backend**: Next.js API Routes with serverless functions
-- **PDF Generation**: Puppeteer with Windows/Linux compatibility
+- **PDF Generation**: jsPDF + html2canvas (client-side)
 - **Markdown Parsing**: Marked.js with GitHub-flavored syntax
 - **Deployment**: Netlify with automatic optimization
 
@@ -83,10 +82,10 @@ src/
 └── app/
     ├── api/
     │   └── convert/
-    │       └── route.ts      # PDF conversion API endpoint
+    │       └── route.ts      # Markdown-to-HTML conversion API
     ├── globals.css           # Global styles with Tailwind
     ├── layout.tsx            # Root layout component
-    └── page.tsx              # Main converter UI
+    └── page.tsx              # Main converter UI with client-side PDF generation
 public/                      # Static assets
 .gitignore                   # Git ignore patterns
 CHANGELOG.md                 # Version history
@@ -108,14 +107,15 @@ No environment variables required for basic functionality. All configuration is 
 
 The `netlify.toml` file includes:
 - Next.js build settings and optimization
-- Serverless function routing
-- Puppeteer compatibility for serverless environments
+- Serverless function routing for markdown-to-HTML conversion
+- Optimized for static site generation with client-side processing
 
 ### Customization
 
 - **Styling**: Modify `src/app/globals.css` for theme changes
-- **PDF Options**: Update `src/app/api/convert/route.ts` for PDF formatting
+- **PDF Options**: Update `src/app/page.tsx` for jsPDF configuration
 - **UI Components**: Edit `src/app/page.tsx` for interface changes
+- **HTML Styling**: Modify `src/app/api/convert/route.ts` for PDF output styling
 
 ## Development / Running Locally 🏗️
 
@@ -215,7 +215,8 @@ No email or direct support provided. All support is handled through GitLab Issue
 ## Acknowledgments 🙏
 
 - [Next.js](https://nextjs.org/) - React framework
-- [Puppeteer](https://pptr.dev/) - Headless browser automation
+- [jsPDF](https://github.com/parallax/jsPDF) - PDF generation in JavaScript
+- [html2canvas](https://html2canvas.hertzen.com/) - Screenshots with JavaScript
 - [Marked.js](https://marked.js.org/) - Markdown parser
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Netlify](https://netlify.com/) - Serverless hosting platform

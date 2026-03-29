@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 /**
  * Main Markdown to PDF converter component
@@ -8,11 +10,11 @@ import { useState } from 'react';
  * This component provides a complete user interface for:
  * - Markdown text input with syntax highlighting placeholder
  * - File upload functionality for .md files
- * - PDF conversion via API endpoint
+ * - Client-side PDF conversion using jsPDF and html2canvas
  * - Responsive design with modern UI/UX
  * 
  * Uses React hooks for state management and handles all user interactions
- * including form validation, file reading, and PDF download.
+ * including form validation, file reading, and client-side PDF generation.
  */
 export default function Home() {
   // State for storing markdown content from user input or file upload
@@ -25,10 +27,12 @@ export default function Home() {
    * 
    * Process flow:
    * 1. Validate markdown input is not empty
-   * 2. Send POST request to appropriate endpoint based on environment
-   * 3. Handle successful response by creating download link
-   * 4. Handle errors with user-friendly messages
-   * 5. Clean up resources and reset loading state
+   * 2. Convert markdown to HTML using API endpoint
+   * 3. Create temporary DOM element with HTML content
+   * 4. Use html2canvas to convert HTML to image
+   * 5. Use jsPDF to generate PDF from image
+   * 6. Download PDF to user's device
+   * 7. Clean up temporary elements and reset loading state
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -42,15 +46,8 @@ export default function Home() {
     // Set loading state to disable button and show progress
     setIsConverting(true);
     try {
-      // Determine the correct endpoint based on environment
-      const isNetlify = window.location.hostname.includes('netlify.app') ||
-        window.location.hostname.includes('netlify.com');
-      const endpoint = isNetlify ? '/.netlify/functions/convert' : '/api/convert';
-
-      console.log(`Using endpoint: ${endpoint}`);
-
-      // Convert markdown to PDF directly
-      const response = await fetch(endpoint, {
+      // Step 1: Convert markdown to HTML using API
+      const response = await fetch('/api/convert', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,37 +55,74 @@ export default function Home() {
         body: JSON.stringify({ markdown }),
       });
 
-      if (response.ok) {
-        // Convert response to blob for file download
-        const blob = await response.blob();
-
-        // Create temporary URL for blob to enable download
-        const url = window.URL.createObjectURL(blob);
-        // Create hidden anchor element for programmatic download
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'converted.pdf';
-        // Trigger download and clean up resources
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url); // Free memory
-        document.body.removeChild(a); // Remove temporary element
-        setIsConverting(false);
-
-      } else {
-        // Parse error response and show detailed error message
+      if (!response.ok) {
         const errorData = await response.json();
         const errorMessage = errorData.details ?
           `${errorData.error}: ${errorData.details}` :
-          errorData.error || 'Failed to start PDF conversion';
-        alert(errorMessage);
-        setIsConverting(false);
+          errorData.error || 'Failed to convert markdown to HTML';
+        throw new Error(errorMessage);
       }
+
+      // Step 2: Get HTML content from response
+      const htmlContent = await response.text();
+
+      // Step 3: Create temporary DOM element for rendering
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '0';
+      tempDiv.style.width = '800px';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.padding = '40px 20px';
+      tempDiv.innerHTML = htmlContent;
+      document.body.appendChild(tempDiv);
+
+      try {
+        // Step 4: Convert HTML to canvas using html2canvas
+        const canvas = await html2canvas(tempDiv, {
+          scale: 2, // Higher resolution for better quality
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: 800,
+          windowWidth: 800
+        });
+
+        // Step 5: Create PDF from canvas using jsPDF
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        // Calculate dimensions to fit A4 page
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+
+        // Scale image to fit PDF page while maintaining aspect ratio
+        const ratio = Math.min(pdfWidth / (imgWidth * 0.264583), pdfHeight / (imgHeight * 0.264583));
+        const imgX = (pdfWidth - imgWidth * 0.264583 * ratio) / 2;
+        const imgY = 0;
+
+        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * 0.264583 * ratio, imgHeight * 0.264583 * ratio);
+
+        // Step 6: Download the PDF
+        pdf.save('converted.pdf');
+
+      } finally {
+        // Step 7: Clean up temporary DOM element
+        document.body.removeChild(tempDiv);
+      }
+
     } catch (error) {
       // Log technical error for debugging and show user-friendly message
       console.error('Error converting to PDF:', error);
-      alert('Error converting to PDF');
+      const errorMessage = error instanceof Error ? error.message : 'Error converting to PDF';
+      alert(errorMessage);
+    } finally {
       setIsConverting(false);
     }
   };
