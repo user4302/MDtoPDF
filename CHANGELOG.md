@@ -11,12 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced canvas-based PDF generation with browser's native print functionality
 - Removed html2canvas and jsPDF dependencies for lighter bundle size
 - Simplified PDF conversion process using iframe isolation and print dialog
-- Added print-specific CSS with page numbering and break rules
+- Added responsive print-specific CSS with relative units (pt) for consistent text sizing
+- Implemented comprehensive print styling for all markdown elements
 - Updated documentation to reflect new print-based architecture
 
 ### Fixed
 - Fixed JSX spacing issues in UI components
 - Updated placeholder text consistency in markdown textarea
+- Resolved text scaling issues across different paper sizes (A4, A3, Tabloid)
+- Removed unused marked import to clean up dependencies
 
 ## [1.0.0] - 2026-03-29
 

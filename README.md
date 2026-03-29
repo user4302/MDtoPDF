@@ -14,7 +14,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 ## Features ✨
 
 - 📝 **Easy Input**: Type markdown directly or upload .md files with drag-and-drop support
-- ⚡ **Fast Conversion**: Instant PDF generation using browser's native print dialog
+- ⚡ **Fast Conversion**: Instant PDF generation using browser's native print dialog with responsive typography
 - 🎨 **Clean Output**: Professional-looking PDFs with GitHub-flavored styling
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 🚀 **Client-Side Processing**: No server dependencies, works entirely in your browser
@@ -67,7 +67,7 @@ npm run dev
 
 1. **Direct Input**: Type or paste markdown content in the text area
 2. **File Upload**: Click "Upload .md file" to select markdown files
-3. **Convert**: Click "Convert to PDF" to open print dialog for PDF generation
+3. **Convert**: Click "Convert to PDF" to open print dialog with responsive typography for any paper size
 4. **Preview**: The tool supports all common markdown syntax including:
    - Headers (# ## ###)
    - Lists (ordered and unordered)
@@ -113,7 +113,7 @@ The `netlify.toml` file includes:
 ### Customization
 
 - **Styling**: Modify `src/app/globals.css` for theme changes
-- **PDF Options**: Update `src/app/page.tsx` for print styling configuration
+- **PDF Options**: Update `src/app/page.tsx` for responsive print styling configuration
 - **UI Components**: Edit `src/app/page.tsx` for interface changes
 - **HTML Styling**: Modify `src/app/api/convert/route.ts` for PDF output styling
 

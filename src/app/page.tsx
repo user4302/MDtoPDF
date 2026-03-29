@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { marked } from 'marked';
 
 /**
  * Home component for the Markdown to PDF Converter application
@@ -10,11 +9,14 @@ import { marked } from 'marked';
  * - Markdown text input with syntax highlighting placeholder
  * - File upload support for .md files
  * - Client-side PDF conversion using browser's native print functionality
+ * - Responsive print styling with consistent text sizing across all paper sizes
+ * - Professional typography using print-optimized CSS with relative units
  * - Responsive design with modern UI/UX
  * - Error handling and user feedback
  * 
  * Uses React hooks for state management and handles all user interactions
- * including form validation, file reading, and print-based PDF generation.
+ * including form validation, file reading, and print-based PDF generation with
+ * responsive typography that scales properly across different paper sizes.
  */
 export default function Home() {
   // State for storing markdown content from user input or file upload
@@ -29,9 +31,16 @@ export default function Home() {
    * 1. Validate markdown input is not empty
    * 2. Convert markdown to HTML using API endpoint
    * 3. Create isolated iframe for print rendering
-   * 4. Apply print-specific CSS with page styling and numbering
-   * 5. Trigger browser print dialog for PDF generation
-   * 6. Clean up iframe and reset loading state
+   * 4. Apply responsive print-specific CSS with relative units (pt) for consistent text sizing
+   * 5. Add comprehensive print styling for all markdown elements
+   * 6. Trigger browser print dialog for PDF generation
+   * 7. Clean up iframe and reset loading state
+   * 
+   * Features:
+   * - Responsive text sizing using print media queries
+   * - Consistent typography across all paper sizes (A4, A3, Tabloid, etc.)
+   * - Proper page breaks and element separation
+   * - Professional print styling with headers, code blocks, tables
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -68,7 +77,7 @@ export default function Home() {
       iframe.style.position = 'fixed';
       iframe.style.left = '-9999px';
       iframe.style.top = '-9999px';
-      iframe.style.width = '800px';
+      iframe.style.width = '100%';
       iframe.style.height = 'auto';
       iframe.style.border = 'none';
       iframe.style.visibility = 'hidden';
@@ -91,25 +100,90 @@ export default function Home() {
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
-      // Step 3: Apply pagedjs styles and create preview
+      // Step 3: Apply print-specific CSS with responsive sizing
       const contentElement = iframeDoc.body;
-      contentElement.style.width = '800px';
       contentElement.style.backgroundColor = 'white';
-      contentElement.style.padding = '40px 20px';
+      contentElement.style.margin = '0';
+      contentElement.style.padding = '0';
       contentElement.style.boxSizing = 'border-box';
       contentElement.innerHTML = `
         <style>
-          @page {
-            size: A4;
-            margin: 20mm 15mm 20mm 15mm;
+          @media print {
+            @page {
+              margin: 1in;
+            }
+            
+            body {
+              font-size: 12pt;
+              line-height: 1.5;
+              color: #000;
+              font-family: 'Inter', system-ui, sans-serif;
+            }
+            
+            .markdown-container {
+              width: 100%;
+              max-width: none;
+              margin: 0;
+              padding: 0;
+            }
+            
+            p, li, h1, h2, h3, h4, h5, h6 {
+              break-inside: avoid;
+            }
+            
+            h1 { font-size: 24pt; margin-bottom: 12pt; }
+            h2 { font-size: 18pt; margin-bottom: 10pt; }
+            h3 { font-size: 14pt; margin-bottom: 8pt; }
+            h4 { font-size: 12pt; margin-bottom: 6pt; }
+            h5 { font-size: 11pt; margin-bottom: 6pt; }
+            h6 { font-size: 10pt; margin-bottom: 6pt; }
+            
+            p { margin-bottom: 8pt; }
+            ul, ol { margin-bottom: 8pt; padding-left: 20pt; }
+            li { margin-bottom: 4pt; }
+            
+            pre {
+              background: #f5f5f5;
+              padding: 8pt;
+              border-radius: 4pt;
+              font-size: 10pt;
+              line-height: 1.4;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+            
+            code {
+              background: #f0f0f0;
+              padding: 2pt 4pt;
+              border-radius: 2pt;
+              font-size: 10pt;
+            }
+            
+            blockquote {
+              border-left: 3pt solid #ddd;
+              padding-left: 12pt;
+              margin: 8pt 0;
+              font-style: italic;
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 8pt;
+            }
+            
+            th, td {
+              border: 1pt solid #ddd;
+              padding: 6pt;
+              text-align: left;
+            }
+            
+            th {
+              background: #f5f5f5;
+              font-weight: bold;
+            }
           }
-          p, li, h1, h2, h3 {
-            break-inside: avoid;
-          }
-          body {
-            font-family: 'Inter', system-ui, sans-serif;
-            line-height: 1.6;
-          }
+          
           @page {
             @bottom-right {
               content: "Page " counter(page) " of " counter(pages);
@@ -118,7 +192,9 @@ export default function Home() {
             }
           }
         </style>
-        ${htmlContent}
+        <div class="markdown-container">
+          ${htmlContent}
+        </div>
       `;
 
       // Step 4: Trigger print dialog
