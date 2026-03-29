@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Replaced canvas-based PDF generation with browser's native print functionality
+- Removed html2canvas and jsPDF dependencies for lighter bundle size
+- Simplified PDF conversion process using iframe isolation and print dialog
+- Added print-specific CSS with page numbering and break rules
+- Updated documentation to reflect new print-based architecture
+
 ### Fixed
-- Prevented UI layout shifts during PDF conversion by implementing iframe isolation
-- Eliminated CSS conflicts between temporary HTML content and main page styling
-- Enhanced canvas capture configuration for proper height calculation
+- Fixed JSX spacing issues in UI components
+- Updated placeholder text consistency in markdown textarea
 
 ## [1.0.0] - 2026-03-29
 

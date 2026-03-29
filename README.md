@@ -14,7 +14,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 ## Features ✨
 
 - 📝 **Easy Input**: Type markdown directly or upload .md files with drag-and-drop support
-- ⚡ **Fast Conversion**: Instant PDF generation with high-quality rendering
+- ⚡ **Fast Conversion**: Instant PDF generation using browser's native print dialog
 - 🎨 **Clean Output**: Professional-looking PDFs with GitHub-flavored styling
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 🚀 **Client-Side Processing**: No server dependencies, works entirely in your browser
@@ -23,10 +23,10 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 
 ## Tech Stack / Built With 🛠️
 
-![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black) ![React](https://img.shields.io/badge/React-19.2.4-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC) ![jsPDF](https://img.shields.io/badge/jsPDF-latest-orange) ![html2canvas](https://img.shields.io/badge/html2canvas-latest-blue) ![Marked](https://img.shields.io/badge/Marked-17.0.5-yellow)
+![Next.js](https://img.shields.io/badge/Next.js-16.2.1-black) ![React](https://img.shields.io/badge/React-19.2.4-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC) ![Marked](https://img.shields.io/badge/Marked-17.0.5-yellow)
 
 - **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS v4
-- **PDF Generation**: jsPDF + html2canvas (client-side)
+- **PDF Generation**: Browser's native print functionality
 - **Markdown Parsing**: Marked.js with GitHub-flavored syntax
 - **Deployment**: Netlify with automatic optimization
 
@@ -67,7 +67,7 @@ npm run dev
 
 1. **Direct Input**: Type or paste markdown content in the text area
 2. **File Upload**: Click "Upload .md file" to select markdown files
-3. **Convert**: Click "Convert to PDF" to generate and download your PDF
+3. **Convert**: Click "Convert to PDF" to open print dialog for PDF generation
 4. **Preview**: The tool supports all common markdown syntax including:
    - Headers (# ## ###)
    - Lists (ordered and unordered)
@@ -113,7 +113,7 @@ The `netlify.toml` file includes:
 ### Customization
 
 - **Styling**: Modify `src/app/globals.css` for theme changes
-- **PDF Options**: Update `src/app/page.tsx` for jsPDF configuration
+- **PDF Options**: Update `src/app/page.tsx` for print styling configuration
 - **UI Components**: Edit `src/app/page.tsx` for interface changes
 - **HTML Styling**: Modify `src/app/api/convert/route.ts` for PDF output styling
 
@@ -215,8 +215,6 @@ No email or direct support provided. All support is handled through GitLab Issue
 ## Acknowledgments 🙏
 
 - [Next.js](https://nextjs.org/) - React framework
-- [jsPDF](https://github.com/parallax/jsPDF) - PDF generation in JavaScript
-- [html2canvas](https://html2canvas.hertzen.com/) - Screenshots with JavaScript
 - [Marked.js](https://marked.js.org/) - Markdown parser
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Netlify](https://netlify.com/) - Serverless hosting platform

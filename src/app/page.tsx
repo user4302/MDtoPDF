@@ -1,20 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { marked } from 'marked';
 
 /**
- * Main Markdown to PDF converter component
+ * Home component for the Markdown to PDF Converter application
  * 
- * This component provides a complete user interface for:
+ * Features:
  * - Markdown text input with syntax highlighting placeholder
- * - File upload functionality for .md files
- * - Client-side PDF conversion using jsPDF and html2canvas
+ * - File upload support for .md files
+ * - Client-side PDF conversion using browser's native print functionality
  * - Responsive design with modern UI/UX
+ * - Error handling and user feedback
  * 
  * Uses React hooks for state management and handles all user interactions
- * including form validation, file reading, and client-side PDF generation.
+ * including form validation, file reading, and print-based PDF generation.
  */
 export default function Home() {
   // State for storing markdown content from user input or file upload
@@ -23,16 +23,15 @@ export default function Home() {
   const [isConverting, setIsConverting] = useState(false);
 
   /**
-   * Handles conversion of markdown content to PDF
+   * Converts markdown content to PDF using browser's native print functionality
    * 
-   * Process flow:
+   * Process:
    * 1. Validate markdown input is not empty
    * 2. Convert markdown to HTML using API endpoint
-   * 3. Create temporary DOM element with HTML content
-   * 4. Use html2canvas to convert HTML to image
-   * 5. Use jsPDF to generate PDF from image
-   * 6. Download PDF to user's device
-   * 7. Clean up temporary elements and reset loading state
+   * 3. Create isolated iframe for print rendering
+   * 4. Apply print-specific CSS with page styling and numbering
+   * 5. Trigger browser print dialog for PDF generation
+   * 6. Clean up iframe and reset loading state
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -55,122 +54,78 @@ export default function Home() {
         body: JSON.stringify({ markdown }),
       });
 
+      // Check if response is OK before parsing JSON
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData.details ?
-          `${errorData.error}: ${errorData.details}` :
-          errorData.error || 'Failed to convert markdown to HTML';
-        throw new Error(errorMessage);
+        const errorText = await response.text();
+        console.error("Server returned an error:", errorText);
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      // Step 2: Get HTML content from response
-      const htmlContent = await response.text();
+      const { html: htmlContent } = await response.json();
 
-      /**
-   * Creates an isolated iframe to prevent CSS conflicts during PDF generation
-   * 
-   * This approach completely separates the temporary HTML content from the main
-   * document to prevent any layout shifts or styling interference.
-   */
-      const createIsolatedIframe = () => {
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.left = '-9999px';
-        iframe.style.top = '-9999px';
-        iframe.style.width = '800px';
-        iframe.style.height = 'auto';
-        iframe.style.border = 'none';
-        iframe.style.visibility = 'hidden';
-        iframe.style.pointerEvents = 'none';
-        return iframe;
-      };
+      // Step 2: Create isolated iframe for completely separate DOM context
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.left = '-9999px';
+      iframe.style.top = '-9999px';
+      iframe.style.width = '800px';
+      iframe.style.height = 'auto';
+      iframe.style.border = 'none';
+      iframe.style.visibility = 'hidden';
+      iframe.style.pointerEvents = 'none';
+      document.body.appendChild(iframe);
 
-      /**
-       * Safely writes HTML content to iframe document
-       * 
-       * @param iframe - The iframe element to write content to
-       * @param htmlContent - The HTML content to write
-       * @returns Promise that resolves when content is written
-       */
-      const writeContentToIframe = async (iframe: HTMLIFrameElement, htmlContent: string) => {
-        document.body.appendChild(iframe);
+      // Wait for iframe to load
+      await new Promise(resolve => {
+        iframe.onload = resolve;
+        setTimeout(resolve, 100);
+      });
 
-        // Wait for iframe to load and then set content
-        await new Promise<void>((resolve) => {
-          iframe.onload = () => resolve();
-          setTimeout(() => resolve(), 100); // Fallback timeout
-        });
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) {
+        throw new Error('Failed to access iframe document');
+      }
 
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!iframeDoc) {
-          throw new Error('Failed to access iframe document');
-        }
+      // Write the HTML content to iframe
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
 
-        // Write the HTML content to iframe
-        iframeDoc.open();
-        iframeDoc.write(htmlContent);
-        iframeDoc.close();
+      // Step 3: Apply pagedjs styles and create preview
+      const contentElement = iframeDoc.body;
+      contentElement.style.width = '800px';
+      contentElement.style.backgroundColor = 'white';
+      contentElement.style.padding = '40px 20px';
+      contentElement.style.boxSizing = 'border-box';
+      contentElement.innerHTML = `
+        <style>
+          @page {
+            size: A4;
+            margin: 20mm 15mm 20mm 15mm;
+          }
+          p, li, h1, h2, h3 {
+            break-inside: avoid;
+          }
+          body {
+            font-family: 'Inter', system-ui, sans-serif;
+            line-height: 1.6;
+          }
+          @page {
+            @bottom-right {
+              content: "Page " counter(page) " of " counter(pages);
+              font-size: 9pt;
+              color: #666;
+            }
+          }
+        </style>
+        ${htmlContent}
+      `;
 
-        return iframeDoc;
-      };
-
-      // Step 3: Create isolated iframe for completely separate DOM context
-      const iframe = createIsolatedIframe();
-      const iframeDoc = await writeContentToIframe(iframe, htmlContent);
-
-      // Get the body element for canvas capture
-      const tempDiv = iframeDoc.body;
-      tempDiv.style.width = '800px';
-      tempDiv.style.backgroundColor = 'white';
-      tempDiv.style.padding = '40px 20px';
-      tempDiv.style.boxSizing = 'border-box';
-
-      try {
-        // Small delay to ensure DOM is properly rendered
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Step 4: Convert HTML to canvas using html2canvas
-        const canvas = await html2canvas(tempDiv, {
-          scale: 2, // Higher resolution for better quality
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          width: 800,
-          height: tempDiv.scrollHeight,
-          windowWidth: 800,
-          windowHeight: tempDiv.scrollHeight,
-          scrollX: 0,
-          scrollY: 0
-        });
-
-        // Step 5: Create PDF from canvas using jsPDF
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-
-        // Calculate dimensions to fit A4 page
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-
-        // Scale image to fit PDF page while maintaining aspect ratio
-        const ratio = Math.min(pdfWidth / (imgWidth * 0.264583), pdfHeight / (imgHeight * 0.264583));
-        const imgX = (pdfWidth - imgWidth * 0.264583 * ratio) / 2;
-        const imgY = 0;
-
-        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * 0.264583 * ratio, imgHeight * 0.264583 * ratio);
-
-        // Step 6: Download the PDF
-        pdf.save('converted.pdf');
-
-      } finally {
-        // Step 7: Clean up iframe
+      // Step 4: Trigger print dialog
+      setTimeout(() => {
+        iframe.contentWindow?.print();
         document.body.removeChild(iframe);
-      }
+      }, 500);
 
     } catch (error) {
       // Log technical error for debugging and show user-friendly message
@@ -246,7 +201,7 @@ export default function Home() {
           <textarea
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
-            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript&#10;// Code block&#10;console.log('Hello World');&#10;```"
+            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript &#10;// Code block&#10;console.log('Hello World');&#10;```"
             className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
           />
           <button
@@ -256,10 +211,10 @@ export default function Home() {
           >
             {isConverting ? 'Converting...' : 'Convert to PDF'}
           </button>
-        </div>
+        </div >
 
         {/* Features Section */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        < div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6" >
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
             <div className="text-3xl mb-3">📝</div>
             <h3 className="font-semibold text-gray-800 mb-2">Easy Input</h3>
@@ -275,8 +230,8 @@ export default function Home() {
             <h3 className="font-semibold text-gray-800 mb-2">Clean Output</h3>
             <p className="text-gray-600 text-sm">Professional-looking PDFs every time</p>
           </div>
-        </div>
-      </div>
-    </div>
+        </div >
+      </div >
+    </div >
   );
 }

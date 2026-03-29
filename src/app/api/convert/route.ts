@@ -148,11 +148,9 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Return HTML content for client-side PDF generation
-    return new NextResponse(htmlDocument, {
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-      }
+    // Return JSON with HTML content for client-side PDF generation
+    return NextResponse.json({
+      html: htmlDocument
     });
 
   } catch (error) {
