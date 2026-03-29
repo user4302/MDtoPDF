@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-03-29
+
+### BREAKING CHANGES
+- **Major Architecture Pivot**: Completely removed server-side PDF generation using Puppeteer
+- PDF generation now works entirely client-side using jsPDF and html2canvas
+- Eliminated all serverless binary dependencies for perfect Netlify compatibility
+
+### Added
+- Client-side PDF generation using jsPDF and html2canvas libraries
+- Complete privacy protection - data never leaves user's computer
+- Zero server costs and no cold-start timeouts
+- High-quality PDF output with proper A4 formatting
+- Seamless one-click PDF download experience
+
+### Removed
+- All Puppeteer dependencies (puppeteer, puppeteer-core, chrome-aws-lambda)
+- Server-side PDF generation API endpoints
+- Background function processing and status polling
+- Chromium binary dependencies and serverless compatibility issues
+
+### Changed
+- Simplified API endpoint to handle only markdown-to-HTML conversion
+- Updated frontend to process PDF generation entirely in browser
+- Enhanced PDF styling with print-optimized CSS
+- Improved error handling for client-side operations
+- Updated documentation to reflect new architecture
+- Streamlined project structure and dependencies
+
+### Fixed
+- **Eliminated "Chromium loop" issues** on Netlify serverless functions
+- Resolved all deployment failures related to binary size limits
+- Fixed cold-start timeout issues that plagued serverless approach
+- Removed complex browser launch configurations and compatibility problems
+
+### Dependencies
+- Added jspdf@latest for client-side PDF generation
+- Added html2canvas@latest for HTML to image conversion
+- Added @types/jspdf for TypeScript support
+- Removed puppeteer, puppeteer-core, and chrome-aws-lambda packages
+
+### Benefits
+- 🚀 **Zero server complexity** - No more serverless function issues
+- 🔒 **Complete privacy** - Data never leaves user's device  
+- 💰 **Zero server costs** - No API calls or server processing
+- ⚡ **Instant conversion** - No cold-start delays
+- 🌐 **Universal compatibility** - Works on any modern browser
+- 📱 **Mobile friendly** - PDF generation works on all devices
+
 ## [0.4.0] - 2026-03-28
 
 ### Fixed
