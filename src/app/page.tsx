@@ -456,6 +456,12 @@ Multiple small "${watermarkText}" texts will repeat across the page instead of a
             >
               {isConverting ? 'Converting...' : 'Convert to PDF'}
             </button>
+
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-xs text-blue-700">
+                <strong>Tip:</strong> For best results, use "Save as PDF" (Chrome/Edge) instead of "Microsoft Print to PDF" to ensure text remains selectable and links stay clickable.
+              </p>
+            </div>
           </div>
 
           {/* Control Panel */}
