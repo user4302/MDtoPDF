@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-04-03
+
 ### Added
 - User guidance tip for PDF printer selection to ensure text remains selectable and links stay clickable
 - Informational box below Convert to PDF button advising Chrome/Edge Save as PDF over Microsoft Print to PDF
