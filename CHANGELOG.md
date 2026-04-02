@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-04-03
 
 ### Added
 - Custom watermark text input field with default "DRAFT" value
@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First row misalignment resolved by removing mixed pseudo-element and div approach
 - Implemented consistent 6x6 grid with programmatic positioning
 - Simplified watermark CSS structure and removed SVG helper function
+
+## [Unreleased]
 
 ## [1.1.0] - 2026-03-30
 
