@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CSS class method: `<div class="page-break"></div>`
 - Horizontal rule method: `---` (treated as page break)
 - Comprehensive page break instructions in UI placeholder text
+- Page break toggle control panel with on/off switch
+- Dynamic placeholder text that updates based on page break setting
+- Flex layout with control panel positioned to the right of input window
 
 ## [1.1.0] - 2026-03-30
 

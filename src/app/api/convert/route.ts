@@ -15,7 +15,7 @@ import { marked } from 'marked';
 export async function POST(request: NextRequest) {
   try {
     // Parse JSON body and extract markdown content
-    const { markdown } = await request.json();
+    const { markdown, pageBreaksEnabled = true } = await request.json();
 
     // Validate required input
     if (!markdown) {
@@ -142,23 +142,23 @@ export async function POST(request: NextRequest) {
             
             /* Page break styles */
             .page-break {
-              display: block;
-              page-break-after: always;
-              break-after: page;
+              display: ${pageBreaksEnabled ? 'block' : 'none'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
             }
             
             div[style*="page-break-after: always"] {
-              display: block;
-              page-break-after: always;
-              break-after: page;
+              display: ${pageBreaksEnabled ? 'block' : 'none'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
             }
             
             hr {
-              border: none;
-              break-after: page;
-              page-break-after: always;
-              margin: 0;
-              height: 0;
+              border: ${pageBreaksEnabled ? 'none' : '1px solid #eaecef'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              margin: ${pageBreaksEnabled ? '0' : '24px 0'};
+              height: ${pageBreaksEnabled ? '0' : '1px'};
             }
           }
         </style>

@@ -19,8 +19,8 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 🚀 **Client-Side Processing**: No server dependencies, works entirely in your browser
 - 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
-- 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls
-- 📄 **Page Break Support**: Control PDF pagination with three methods (HTML, CSS class, or horizontal rule)
+- 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls and toggle settings
+- 📄 **Page Break Control**: Toggle page breaks on/off or use horizontal lines with three methods
 
 ## Tech Stack / Built With 🛠️
 
@@ -78,11 +78,17 @@ npm run dev
 
 ### Page Breaks
 
-Control PDF pagination using any of these methods:
+Control PDF pagination using the toggle control panel and any of these methods:
 
+**Toggle Control:**
+- Use the **Page Breaks** toggle in the settings panel to enable/disable page break functionality
+- **Enabled**: `---` creates page breaks, `<div class="page-break"></div>` works
+- **Disabled**: `---` creates visible horizontal lines instead
+
+**Manual Methods:**
 1. **HTML Inline Style**: `<div style="page-break-after: always;"></div>`
 2. **CSS Class**: `<div class="page-break"></div>`
-3. **Horizontal Rule**: `---` (treated as page break)
+3. **Horizontal Rule**: `---` (behavior depends on toggle setting)
 
 Example:
 ```markdown
@@ -92,7 +98,7 @@ Content for first page...
 <div class="page-break"></div>
 
 ## Section 2
-Content starts on new page
+Content starts on new page (when toggle is ON)
 ```
 
 ## Project Structure 📂
