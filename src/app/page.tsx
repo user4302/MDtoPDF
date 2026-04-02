@@ -30,6 +30,8 @@ export default function Home() {
   const [draftEnabled, setDraftEnabled] = useState(false);
   // Toggle for multiple small draft texts vs single large text
   const [multipleDraftEnabled, setMultipleDraftEnabled] = useState(false);
+  // Custom watermark text
+  const [watermarkText, setWatermarkText] = useState("DRAFT");
 
   /**
    * Helper function to generate SVG watermark with CSS mask-compatible encoding
@@ -162,18 +164,20 @@ export default function Home() {
             }
             
             body:after {
-              content: "${draftEnabled ? (multipleDraftEnabled ? '' : 'DRAFT') : ''}";
+              content: "${draftEnabled ? (multipleDraftEnabled ? '' : watermarkText) : ''}";
               position: fixed;
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%) rotate(-45deg);
-              font-size: 120pt;
+              font-size: ${watermarkText.length > 15 ? '60pt' : watermarkText.length > 10 ? '80pt' : watermarkText.length > 5 ? '100pt' : '120pt'};
               font-weight: bold;
               color: #000;
               opacity: 0.1;
               z-index: -1;
               pointer-events: none;
               white-space: nowrap;
+              transform-origin: center;
+              letter-spacing: ${watermarkText.length > 10 ? '-2pt' : '0pt'};
             }
             
             ${multipleDraftEnabled && draftEnabled ? `
@@ -309,7 +313,7 @@ export default function Home() {
               <div class="watermark-item" style="
                 top: ${row * 16.66}%; 
                 left: ${col * 16.66}%;
-              ">DRAFT</div>
+              ">${watermarkText}</div>
             `).join('')}
           `).join('')}
         </div>
@@ -438,11 +442,11 @@ This will start at the top of Page 2.` : `
 
 Use --- to create visible horizontal lines between sections.`}${draftEnabled ? `
 
---- DRAFT WATERMARK ---
+--- WATERMARK ---
 
-Draft watermark is enabled. "DRAFT" will appear diagonally across all pages in the PDF.${multipleDraftEnabled ? `
+Watermark is enabled. "${watermarkText}" will appear diagonally across all pages in the PDF.${multipleDraftEnabled ? `
 
-Multiple small "DRAFT" texts will repeat across the page instead of a single large text.` : ''}` : ''}`}
+Multiple small "${watermarkText}" texts will repeat across the page instead of a single large text.` : ''}` : ''}`}
               className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
             />
             <button
@@ -486,7 +490,7 @@ Multiple small "DRAFT" texts will repeat across the page instead of a single lar
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label htmlFor="draft" className="text-sm font-medium text-gray-700">
-                  Draft Watermark
+                  Watermark
                 </label>
                 <button
                   id="draft"
@@ -500,18 +504,37 @@ Multiple small "DRAFT" texts will repeat across the page instead of a single lar
               </div>
               <p className="text-xs text-gray-500">
                 {draftEnabled
-                  ? 'Draft watermark enabled. "DRAFT" will appear diagonally across pages.'
-                  : 'Draft watermark disabled.'
+                  ? `Watermark enabled. "${watermarkText}" will appear diagonally across pages.`
+                  : 'Watermark disabled.'
                 }
               </p>
             </div>
 
-            {/* Multiple Draft Toggle - Only show when draft is enabled */}
+            {/* Custom Watermark Text - Only show when watermark is enabled */}
+            {draftEnabled && (
+              <div className="space-y-3 ml-4 pl-4 border-l-2 border-gray-200">
+                <div className="space-y-2">
+                  <label htmlFor="watermark-text" className="text-sm font-medium text-gray-700">
+                    Watermark Text
+                  </label>
+                  <input
+                    id="watermark-text"
+                    type="text"
+                    value={watermarkText}
+                    onChange={(e) => setWatermarkText(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                    placeholder="Enter watermark text"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Multiple Watermark Toggle - Only show when watermark is enabled */}
             {draftEnabled && (
               <div className="space-y-3 ml-4 pl-4 border-l-2 border-gray-200">
                 <div className="flex items-center justify-between">
                   <label htmlFor="multiple-draft" className="text-sm font-medium text-gray-700">
-                    Multiple Small Drafts
+                    Multiple Small Watermarks
                   </label>
                   <button
                     id="multiple-draft"
@@ -525,8 +548,8 @@ Multiple small "DRAFT" texts will repeat across the page instead of a single lar
                 </div>
                 <p className="text-xs text-gray-500">
                   {multipleDraftEnabled
-                    ? 'Multiple small "DRAFT" texts will repeat across the page.'
-                    : 'Single large "DRAFT" text will appear in the center.'
+                    ? `Multiple small "${watermarkText}" texts will repeat across the page.`
+                    : `Single large "${watermarkText}" text will appear in the center.`
                   }
                 </p>
               </div>

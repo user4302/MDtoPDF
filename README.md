@@ -21,7 +21,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
 - 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls and toggle settings
 - 📄 **Page Break Control**: Toggle page breaks on/off or use horizontal lines with three methods
-- 🏷️ **Draft Watermark**: Add diagonal "DRAFT" watermark with single or tiled pattern options
+- 🏷️ **Watermark**: Add custom diagonal watermark with single or tiled pattern options
 
 ## Tech Stack / Built With 🛠️
 
@@ -102,39 +102,50 @@ Content for first page...
 Content starts on new page (when toggle is ON)
 ```
 
-### Draft Watermark
+### Watermark
 
-Add a professional "DRAFT" watermark to your PDF documents with two pattern options.
+Add a custom diagonal watermark to your PDF documents with personalized text and pattern options.
 
 **Toggle Controls:**
-- **Draft Watermark**: Enable/disable the watermark functionality
-- **Multiple Small Drafts**: Choose between single centered watermark or tiled pattern
+- **Watermark**: Enable/disable the watermark functionality
+- **Custom Text**: Enter any watermark text (defaults to "DRAFT")
+- **Multiple Small Watermarks**: Choose between single centered watermark or tiled pattern
 
 **Watermark Modes:**
 
 1. **Single Watermark** (Default):
-   - Large "DRAFT" text centered on each page
-   - 120pt font size, 45-degree diagonal rotation
+   - Large custom text centered on each page
+   - Responsive font size (60-120pt) based on text length
+   - 45-degree diagonal rotation
    - 10% opacity for subtle visibility
 
-2. **Multiple Small Drafts**:
-   - Tiled pattern of smaller "DRAFT" text across entire page
-   - SVG-based tiling for perfect non-overlapping coverage
-   - 20pt font size, 120x120px tile density
-   - 10% opacity for consistent appearance
+2. **Multiple Small Watermarks**:
+   - Tiled pattern of smaller custom text across entire page
+   - 6×6 grid layout for consistent coverage
+   - 24pt font size with 16.66% spacing
+   - 10% opacity for uniform appearance
 
 **Watermark Properties:**
-- **Text**: "DRAFT" in bold font
+- **Text**: Custom user-defined text (default: "DRAFT")
 - **Rotation**: 45-degree diagonal angle
 - **Opacity**: 10% for subtle visibility (both modes)
 - **Color**: Black for compatibility with all printers
+- **Responsive Scaling**: Font size adjusts automatically for longer text
 - **Print Optimization**: CSS color adjustment ensures proper PDF rendering
+
+**Custom Text Examples:**
+- "DRAFT" - For document review processes
+- "CONFIDENTIAL" - For sensitive internal documents  
+- "SAMPLE" - For demonstration purposes
+- "INTERNAL USE" - For company internal documents
+- "DO NOT DISTRIBUTE" - For restricted documents
 
 This feature is perfect for:
 - Document review processes
 - Version control during development
 - Internal drafts before final publication
 - Confidential document marking
+- Sample document distribution
 
 ## Project Structure 📂
 

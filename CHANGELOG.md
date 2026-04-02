@@ -7,13 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Multiple draft watermark grid alignment by unifying positioning system
-- First row misalignment resolved by removing mixed pseudo-element and div approach
-- Implemented consistent 6x6 grid with programmatic positioning
-- Simplified watermark CSS structure and removed SVG helper function
-
 ### Added
+- Custom watermark text input field with default "DRAFT" value
+- Responsive font scaling for single watermark based on text length
+- Dynamic watermark content that updates in real-time as user types
+- Improved UI terminology from "Draft Watermark" to "Watermark"
+- Enhanced input field styling with proper text color and contrast
 - Multiple draft watermark mode with SVG tiled background pattern
 - Non-overlapping draft watermark using CSS background-repeat with SVG tiles
 - Standardized watermark opacity (0.1) across single and multiple draft modes
@@ -32,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Page break toggle control panel with on/off switch
 - Dynamic placeholder text that updates based on page break setting
 - Flex layout with control panel positioned to the right of input window
+
+### Fixed
+- Multiple draft watermark grid alignment by unifying positioning system
+- First row misalignment resolved by removing mixed pseudo-element and div approach
+- Implemented consistent 6x6 grid with programmatic positioning
+- Simplified watermark CSS structure and removed SVG helper function
 
 ## [1.1.0] - 2026-03-30
 
