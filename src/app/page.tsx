@@ -13,6 +13,7 @@ import { useState } from 'react';
  * - Professional typography using print-optimized CSS with relative units
  * - Responsive design with modern UI/UX
  * - Error handling and user feedback
+ * - Draft watermark toggle functionality
  * 
  * Uses React hooks for state management and handles all user interactions
  * including form validation, file reading, and print-based PDF generation with
@@ -23,6 +24,51 @@ export default function Home() {
   const [markdown, setMarkdown] = useState('');
   // Loading state to show conversion progress and prevent duplicate requests
   const [isConverting, setIsConverting] = useState(false);
+  // Toggle for enabling/disabling page breaks
+  const [pageBreaksEnabled, setPageBreaksEnabled] = useState(true);
+  // Toggle for enabling/disabling draft watermark
+  const [draftEnabled, setDraftEnabled] = useState(false);
+  // Toggle for multiple small draft texts vs single large text
+  const [multipleDraftEnabled, setMultipleDraftEnabled] = useState(false);
+  // Custom watermark text
+  const [watermarkText, setWatermarkText] = useState("DRAFT");
+
+  /**
+   * Helper function to generate SVG watermark with CSS mask-compatible encoding
+   * @param text - Watermark text to display
+   * @returns Encoded SVG data URI for mask-based vector rendering
+   */
+  const getWatermarkSvg = (text: string): string => {
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>
+        <text 
+          x='50%' 
+          y='50%' 
+          font-size='22pt' 
+          font-weight='bold' 
+          font-family='Arial, sans-serif' 
+          fill='black' 
+          text-anchor='middle' 
+          dominant-baseline='middle' 
+          transform='rotate(-45, 150, 150)'
+        >
+          ${text}
+        </text>
+      </svg>
+    `.trim();
+
+    // Use CSS-compatible escaping for mask images
+    return `url("data:image/svg+xml,${svg.replace(/"/g, "'").replace(/%/g, '%25').replace(/#/g, '%23').replace(/{/g, '%7B').replace(/}/g, '%7D').replace(/</g, '%3C').replace(/>/g, '%3E')}")`;
+  };
+
+  /**
+   * Helper function to generate repeated DRAFT text for watermark
+   * @param repeatCount - Number of times to repeat "DRAFT "
+   * @returns String with repeated "DRAFT " text
+   */
+  const generateDraftContent = (repeatCount: number): string => {
+    return "DRAFT ".repeat(repeatCount);
+  };
 
   /**
    * Converts markdown content to PDF using browser's native print functionality
@@ -33,14 +79,16 @@ export default function Home() {
    * 3. Create isolated iframe for print rendering
    * 4. Apply responsive print-specific CSS with relative units (pt) for consistent text sizing
    * 5. Add comprehensive print styling for all markdown elements
-   * 6. Trigger browser print dialog for PDF generation
-   * 7. Clean up iframe and reset loading state
+   * 6. Add draft watermark if enabled (single or multiple pattern)
+   * 7. Trigger browser print dialog for PDF generation
+   * 8. Clean up iframe and reset loading state
    * 
    * Features:
    * - Responsive text sizing using print media queries
    * - Consistent typography across all paper sizes (A4, A3, Tabloid, etc.)
    * - Proper page breaks and element separation
    * - Professional print styling with headers, code blocks, tables
+   * - Optional diagonal "DRAFT" watermark (single or tiled pattern)
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -60,7 +108,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ markdown }),
+        body: JSON.stringify({ markdown, pageBreaksEnabled, draftEnabled, multipleDraftEnabled }),
       });
 
       // Check if response is OK before parsing JSON
@@ -96,16 +144,11 @@ export default function Home() {
       }
 
       // Write the HTML content to iframe
-      iframeDoc.open();
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
       // Step 3: Apply print-specific CSS with responsive sizing
       const contentElement = iframeDoc.body;
-      contentElement.style.backgroundColor = 'white';
-      contentElement.style.margin = '0';
-      contentElement.style.padding = '0';
-      contentElement.style.boxSizing = 'border-box';
       contentElement.innerHTML = `
         <style>
           @media print {
@@ -119,6 +162,54 @@ export default function Home() {
               color: #000;
               font-family: 'Inter', system-ui, sans-serif;
             }
+            
+            body:after {
+              content: "${draftEnabled ? (multipleDraftEnabled ? '' : watermarkText) : ''}";
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-45deg);
+              font-size: ${watermarkText.length > 15 ? '60pt' : watermarkText.length > 10 ? '80pt' : watermarkText.length > 5 ? '100pt' : '120pt'};
+              font-weight: bold;
+              color: #000;
+              opacity: 0.1;
+              z-index: -1;
+              pointer-events: none;
+              white-space: nowrap;
+              transform-origin: center;
+              letter-spacing: ${watermarkText.length > 10 ? '-2pt' : '0pt'};
+            }
+            
+            ${multipleDraftEnabled && draftEnabled ? `
+            /* Unified watermark grid system */
+            .watermark-grid {
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: -1;
+              pointer-events: none;
+            }
+            
+            .watermark-item {
+              position: absolute;
+              font-size: 24pt;
+              font-weight: bold;
+              color: #000;
+              opacity: 0.1;
+              transform: rotate(-45deg);
+              white-space: nowrap;
+              pointer-events: none;
+              z-index: -1;
+            }
+            
+            /* Ensure watermark prints properly */
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            ` : ''}
             
             .markdown-container {
               width: 100%;
@@ -182,6 +273,27 @@ export default function Home() {
               background: #f5f5f5;
               font-weight: bold;
             }
+            
+            /* Page break styles */
+            .page-break {
+              display: ${pageBreaksEnabled ? 'block' : 'none'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
+            }
+            
+            div[style*="page-break-after: always"] {
+              display: ${pageBreaksEnabled ? 'block' : 'none'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
+            }
+            
+            hr {
+              border: ${pageBreaksEnabled ? 'none' : '1px solid #eaecef'};
+              break-after: ${pageBreaksEnabled ? 'page' : 'auto'};
+              page-break-after: ${pageBreaksEnabled ? 'always' : 'auto'};
+              margin: ${pageBreaksEnabled ? '0' : '24px 0'};
+              height: ${pageBreaksEnabled ? '0' : '1px'};
+            }
           }
           
           @page {
@@ -194,7 +306,18 @@ export default function Home() {
         </style>
         <div class="markdown-container">
           ${htmlContent}
+        </div>${multipleDraftEnabled && draftEnabled ? `
+        <div class="watermark-grid">
+          ${[0, 1, 2, 3, 4, 5].map(row => `
+            ${[0, 1, 2, 3, 4, 5].map(col => `
+              <div class="watermark-item" style="
+                top: ${row * 16.66}%; 
+                left: ${col * 16.66}%;
+              ">${watermarkText}</div>
+            `).join('')}
+          `).join('')}
         </div>
+        ` : ''}
       `;
 
       // Step 4: Trigger print dialog
@@ -254,43 +377,188 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Markdown to PDF Converter</h1>
           <p className="text-gray-600">Convert your markdown files to PDF instantly</p>
         </div>
 
-        {/* Input Section */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-200">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Markdown Input</h2>
-            <label className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md">
-              Upload .md file
-              <input
-                type="file"
-                accept=".md,text/markdown"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+        {/* Main Content Area with Flex Layout */}
+        <div className="flex gap-6">
+          {/* Input Section */}
+          <div className="flex-1 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">Markdown Input</h2>
+              <label className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md">
+                Upload .md file
+                <input
+                  type="file"
+                  accept=".md,text/markdown"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <textarea
+              value={markdown}
+              onChange={(e) => setMarkdown(e.target.value)}
+              placeholder={`Enter your markdown here or upload a file...
+
+# Heading
+## Subheading
+
+- List item 1
+- List item 2
+
+**Bold text** and *italic text*
+
+[Link](https://example.com)
+
+\`\`\`javascript 
+// Code block
+console.log('Hello World');
+\`\`\`${pageBreaksEnabled ? `
+
+--- PAGE BREAKS ---
+
+For page breaks, use any of these methods:
+
+1. Standard HTML: <div style="page-break-after: always;"></div>
+
+2. Clean CSS class: <div class="page-break"></div>
+
+3. Horizontal rule: --- (will be treated as page break)
+
+Example:
+## End of Section 1
+This is the last sentence of the first page.
+
+<div class="page-break"></div>
+
+## Start of Section 2
+This will start at the top of Page 2.` : `
+
+--- HORIZONTAL RULES ---
+
+Use --- to create visible horizontal lines between sections.`}${draftEnabled ? `
+
+--- WATERMARK ---
+
+Watermark is enabled. "${watermarkText}" will appear diagonally across all pages in the PDF.${multipleDraftEnabled ? `
+
+Multiple small "${watermarkText}" texts will repeat across the page instead of a single large text.` : ''}` : ''}`}
+              className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
+            />
+            <button
+              onClick={handleConvertToPdf}
+              disabled={isConverting || !markdown.trim()}
+              className="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none"
+            >
+              {isConverting ? 'Converting...' : 'Convert to PDF'}
+            </button>
           </div>
-          <textarea
-            value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript &#10;// Code block&#10;console.log('Hello World');&#10;```"
-            className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
-          />
-          <button
-            onClick={handleConvertToPdf}
-            disabled={isConverting || !markdown.trim()}
-            className="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:shadow-none"
-          >
-            {isConverting ? 'Converting...' : 'Convert to PDF'}
-          </button>
-        </div >
+
+          {/* Control Panel */}
+          <div className="w-64 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-200 h-fit">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Settings</h3>
+
+            {/* Page Break Toggle */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label htmlFor="page-breaks" className="text-sm font-medium text-gray-700">
+                  Page Breaks
+                </label>
+                <button
+                  id="page-breaks"
+                  onClick={() => setPageBreaksEnabled(!pageBreaksEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${pageBreaksEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pageBreaksEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {pageBreaksEnabled
+                  ? 'Page breaks enabled. Use ---, <div class="page-break"></div>, or HTML style for page breaks.'
+                  : 'Page breaks disabled. --- will create horizontal lines instead.'
+                }
+              </p>
+            </div>
+
+            {/* Draft Toggle */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label htmlFor="draft" className="text-sm font-medium text-gray-700">
+                  Watermark
+                </label>
+                <button
+                  id="draft"
+                  onClick={() => setDraftEnabled(!draftEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${draftEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${draftEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {draftEnabled
+                  ? `Watermark enabled. "${watermarkText}" will appear diagonally across pages.`
+                  : 'Watermark disabled.'
+                }
+              </p>
+            </div>
+
+            {/* Custom Watermark Text - Only show when watermark is enabled */}
+            {draftEnabled && (
+              <div className="space-y-3 ml-4 pl-4 border-l-2 border-gray-200">
+                <div className="space-y-2">
+                  <label htmlFor="watermark-text" className="text-sm font-medium text-gray-700">
+                    Watermark Text
+                  </label>
+                  <input
+                    id="watermark-text"
+                    type="text"
+                    value={watermarkText}
+                    onChange={(e) => setWatermarkText(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500"
+                    placeholder="Enter watermark text"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Multiple Watermark Toggle - Only show when watermark is enabled */}
+            {draftEnabled && (
+              <div className="space-y-3 ml-4 pl-4 border-l-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="multiple-draft" className="text-sm font-medium text-gray-700">
+                    Multiple Small Watermarks
+                  </label>
+                  <button
+                    id="multiple-draft"
+                    onClick={() => setMultipleDraftEnabled(!multipleDraftEnabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${multipleDraftEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${multipleDraftEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {multipleDraftEnabled
+                    ? `Multiple small "${watermarkText}" texts will repeat across the page.`
+                    : `Single large "${watermarkText}" text will appear in the center.`
+                  }
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Features Section */}
-        < div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6" >
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
             <div className="text-3xl mb-3">📝</div>
             <h3 className="font-semibold text-gray-800 mb-2">Easy Input</h3>
@@ -306,8 +574,8 @@ export default function Home() {
             <h3 className="font-semibold text-gray-800 mb-2">Clean Output</h3>
             <p className="text-gray-600 text-sm">Professional-looking PDFs every time</p>
           </div>
-        </div >
-      </div >
-    </div >
+        </div>
+      </div>
+    </div>
   );
 }

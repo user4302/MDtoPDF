@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-04-03
+
+### Added
+- Custom watermark text input field with default "DRAFT" value
+- Responsive font scaling for single watermark based on text length
+- Dynamic watermark content that updates in real-time as user types
+- Improved UI terminology from "Draft Watermark" to "Watermark"
+- Enhanced input field styling with proper text color and contrast
+- Multiple draft watermark mode with SVG tiled background pattern
+- Non-overlapping draft watermark using CSS background-repeat with SVG tiles
+- Standardized watermark opacity (0.1) across single and multiple draft modes
+- Multiple draft toggle switch with conditional visibility in settings panel
+- Print color adjustment CSS for proper watermark rendering in PDF output
+- Draft watermark toggle functionality for PDF generation
+- Diagonal "DRAFT" watermark with 50% opacity when enabled
+- Draft watermark appears across all pages in PDF output
+- Toggle switch in settings panel for draft watermark control
+- Updated placeholder text with draft watermark documentation
+- Page break support for markdown-to-PDF conversion with three trigger methods
+- HTML inline style method: `<div style="page-break-after: always;"></div>`
+- CSS class method: `<div class="page-break"></div>`
+- Horizontal rule method: `---` (treated as page break)
+- Comprehensive page break instructions in UI placeholder text
+- Page break toggle control panel with on/off switch
+- Dynamic placeholder text that updates based on page break setting
+- Flex layout with control panel positioned to the right of input window
+
+### Fixed
+- Multiple draft watermark grid alignment by unifying positioning system
+- First row misalignment resolved by removing mixed pseudo-element and div approach
+- Implemented consistent 6x6 grid with programmatic positioning
+- Simplified watermark CSS structure and removed SVG helper function
+
+## [Unreleased]
+
 ## [1.1.0] - 2026-03-30
 
 ### Changed
