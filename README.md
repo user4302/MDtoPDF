@@ -21,7 +21,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
 - 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls and toggle settings
 - 📄 **Page Break Control**: Toggle page breaks on/off or use horizontal lines with three methods
-- 🏷️ **Draft Watermark**: Add diagonal "DRAFT" watermark with 50% opacity across all pages
+- 🏷️ **Draft Watermark**: Add diagonal "DRAFT" watermark with customizable density and patterns
 
 ## Tech Stack / Built With 🛠️
 
@@ -104,19 +104,31 @@ Content starts on new page (when toggle is ON)
 
 ### Draft Watermark
 
-Add a professional "DRAFT" watermark to your PDF documents for version control and review purposes.
+Add a professional "DRAFT" watermark to your PDF documents with customizable patterns and density.
 
-**Toggle Control:**
-- Use the **Draft Watermark** toggle in the settings panel to enable/disable the watermark
-- **Enabled**: "DRAFT" text appears diagonally across all pages with 50% opacity
-- **Disabled**: No watermark is applied to the PDF
+**Toggle Controls:**
+- **Draft Watermark**: Enable/disable the watermark functionality
+- **Multiple Small Drafts**: Choose between single centered watermark or tiled pattern
+
+**Watermark Modes:**
+
+1. **Single Watermark** (Default):
+   - Large "DRAFT" text centered on each page
+   - 120pt font size, 45-degree diagonal rotation
+   - 10% opacity for subtle visibility
+
+2. **Multiple Small Drafts**:
+   - Tiled pattern of smaller "DRAFT" text across entire page
+   - SVG-based tiling for perfect non-overlapping coverage
+   - 20pt font size, 120x120px tile density
+   - 10% opacity for consistent appearance
 
 **Watermark Properties:**
-- **Text**: "DRAFT" in bold, 120pt font size
-- **Position**: Centered on each page
+- **Text**: "DRAFT" in bold font
 - **Rotation**: 45-degree diagonal angle
-- **Opacity**: 50% for subtle visibility
+- **Opacity**: 10% for subtle visibility (both modes)
 - **Color**: Black for compatibility with all printers
+- **Print Optimization**: CSS color adjustment ensures proper PDF rendering
 
 This feature is perfect for:
 - Document review processes

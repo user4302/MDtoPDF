@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Multiple draft watermark mode with SVG tiled background pattern
+- Non-overlapping draft watermark using CSS background-repeat with SVG tiles
+- Standardized watermark opacity (0.1) across single and multiple draft modes
+- Multiple draft toggle switch with conditional visibility in settings panel
+- Print color adjustment CSS for proper watermark rendering in PDF output
 - Draft watermark toggle functionality for PDF generation
 - Diagonal "DRAFT" watermark with 50% opacity when enabled
 - Draft watermark appears across all pages in PDF output

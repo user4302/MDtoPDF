@@ -28,6 +28,17 @@ export default function Home() {
   const [pageBreaksEnabled, setPageBreaksEnabled] = useState(true);
   // Toggle for enabling/disabling draft watermark
   const [draftEnabled, setDraftEnabled] = useState(false);
+  // Toggle for multiple small draft texts vs single large text
+  const [multipleDraftEnabled, setMultipleDraftEnabled] = useState(false);
+
+  /**
+   * Helper function to generate repeated DRAFT text for watermark
+   * @param repeatCount - Number of times to repeat "DRAFT "
+   * @returns String with repeated "DRAFT " text
+   */
+  const generateDraftContent = (repeatCount: number): string => {
+    return "DRAFT ".repeat(repeatCount);
+  };
 
   /**
    * Converts markdown content to PDF using browser's native print functionality
@@ -38,7 +49,7 @@ export default function Home() {
    * 3. Create isolated iframe for print rendering
    * 4. Apply responsive print-specific CSS with relative units (pt) for consistent text sizing
    * 5. Add comprehensive print styling for all markdown elements
-   * 6. Add draft watermark if enabled
+   * 6. Add draft watermark if enabled (single or multiple pattern)
    * 7. Trigger browser print dialog for PDF generation
    * 8. Clean up iframe and reset loading state
    * 
@@ -47,7 +58,7 @@ export default function Home() {
    * - Consistent typography across all paper sizes (A4, A3, Tabloid, etc.)
    * - Proper page breaks and element separation
    * - Professional print styling with headers, code blocks, tables
-   * - Optional diagonal "DRAFT" watermark
+   * - Optional diagonal "DRAFT" watermark (single or tiled pattern)
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -67,7 +78,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ markdown, pageBreaksEnabled, draftEnabled }),
+        body: JSON.stringify({ markdown, pageBreaksEnabled, draftEnabled, multipleDraftEnabled }),
       });
 
       // Check if response is OK before parsing JSON
@@ -128,7 +139,7 @@ export default function Home() {
             }
             
             body:after {
-              content: "${draftEnabled ? 'DRAFT' : ''}";
+              content: "${draftEnabled ? (multipleDraftEnabled ? '' : 'DRAFT') : ''}";
               position: fixed;
               top: 50%;
               left: 50%;
@@ -136,11 +147,35 @@ export default function Home() {
               font-size: 120pt;
               font-weight: bold;
               color: #000;
-              opacity: 0.5;
+              opacity: 0.1;
               z-index: -1;
               pointer-events: none;
               white-space: nowrap;
             }
+            
+            ${multipleDraftEnabled && draftEnabled ? `
+            body:before {
+              content: "";
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: -1;
+              pointer-events: none;
+              opacity: 0.1;
+              
+              /* SVG tiled background pattern */
+              background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='black' font-family='Arial' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45 60 60)'%3E DRAFT %3C/text%3E%3C/svg%3E");
+              background-repeat: repeat;
+            }
+            
+            /* Ensure watermark prints properly */
+            body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            ` : ''}
             
             .markdown-container {
               width: 100%;
@@ -364,7 +399,9 @@ Use --- to create visible horizontal lines between sections.`}${draftEnabled ? `
 
 --- DRAFT WATERMARK ---
 
-Draft watermark is enabled. "DRAFT" will appear diagonally across all pages in the PDF.` : ''}`}
+Draft watermark is enabled. "DRAFT" will appear diagonally across all pages in the PDF.${multipleDraftEnabled ? `
+
+Multiple small "DRAFT" texts will repeat across the page instead of a single large text.` : ''}` : ''}`}
               className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
             />
             <button
@@ -427,6 +464,32 @@ Draft watermark is enabled. "DRAFT" will appear diagonally across all pages in t
                 }
               </p>
             </div>
+
+            {/* Multiple Draft Toggle - Only show when draft is enabled */}
+            {draftEnabled && (
+              <div className="space-y-3 ml-4 pl-4 border-l-2 border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="multiple-draft" className="text-sm font-medium text-gray-700">
+                    Multiple Small Drafts
+                  </label>
+                  <button
+                    id="multiple-draft"
+                    onClick={() => setMultipleDraftEnabled(!multipleDraftEnabled)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${multipleDraftEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${multipleDraftEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {multipleDraftEnabled
+                    ? 'Multiple small "DRAFT" texts will repeat across the page.'
+                    : 'Single large "DRAFT" text will appear in the center.'
+                  }
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
