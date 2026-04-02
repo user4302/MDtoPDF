@@ -13,6 +13,7 @@ import { useState } from 'react';
  * - Professional typography using print-optimized CSS with relative units
  * - Responsive design with modern UI/UX
  * - Error handling and user feedback
+ * - Draft watermark toggle functionality
  * 
  * Uses React hooks for state management and handles all user interactions
  * including form validation, file reading, and print-based PDF generation with
@@ -25,6 +26,8 @@ export default function Home() {
   const [isConverting, setIsConverting] = useState(false);
   // Toggle for enabling/disabling page breaks
   const [pageBreaksEnabled, setPageBreaksEnabled] = useState(true);
+  // Toggle for enabling/disabling draft watermark
+  const [draftEnabled, setDraftEnabled] = useState(false);
 
   /**
    * Converts markdown content to PDF using browser's native print functionality
@@ -35,14 +38,16 @@ export default function Home() {
    * 3. Create isolated iframe for print rendering
    * 4. Apply responsive print-specific CSS with relative units (pt) for consistent text sizing
    * 5. Add comprehensive print styling for all markdown elements
-   * 6. Trigger browser print dialog for PDF generation
-   * 7. Clean up iframe and reset loading state
+   * 6. Add draft watermark if enabled
+   * 7. Trigger browser print dialog for PDF generation
+   * 8. Clean up iframe and reset loading state
    * 
    * Features:
    * - Responsive text sizing using print media queries
    * - Consistent typography across all paper sizes (A4, A3, Tabloid, etc.)
    * - Proper page breaks and element separation
    * - Professional print styling with headers, code blocks, tables
+   * - Optional diagonal "DRAFT" watermark
    * 
    * @returns Promise<void> - No return value, handles side effects
    */
@@ -62,7 +67,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ markdown, pageBreaksEnabled }),
+        body: JSON.stringify({ markdown, pageBreaksEnabled, draftEnabled }),
       });
 
       // Check if response is OK before parsing JSON
@@ -120,6 +125,21 @@ export default function Home() {
               line-height: 1.5;
               color: #000;
               font-family: 'Inter', system-ui, sans-serif;
+            }
+            
+            body:after {
+              content: "${draftEnabled ? 'DRAFT' : ''}";
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-45deg);
+              font-size: 120pt;
+              font-weight: bold;
+              color: #000;
+              opacity: 0.5;
+              z-index: -1;
+              pointer-events: none;
+              white-space: nowrap;
             }
             
             .markdown-container {
@@ -337,9 +357,14 @@ This is the last sentence of the first page.
 
 ## Start of Section 2
 This will start at the top of Page 2.` : `
+
 --- HORIZONTAL RULES ---
 
-Use --- to create visible horizontal lines between sections.`}`}
+Use --- to create visible horizontal lines between sections.`}${draftEnabled ? `
+
+--- DRAFT WATERMARK ---
+
+Draft watermark is enabled. "DRAFT" will appear diagonally across all pages in the PDF.` : ''}`}
               className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
             />
             <button
@@ -364,12 +389,10 @@ Use --- to create visible horizontal lines between sections.`}`}
                 <button
                   id="page-breaks"
                   onClick={() => setPageBreaksEnabled(!pageBreaksEnabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${pageBreaksEnabled ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${pageBreaksEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pageBreaksEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pageBreaksEnabled ? 'translate-x-6' : 'translate-x-1'}`}
                   />
                 </button>
               </div>
@@ -380,11 +403,35 @@ Use --- to create visible horizontal lines between sections.`}`}
                 }
               </p>
             </div>
+
+            {/* Draft Toggle */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label htmlFor="draft" className="text-sm font-medium text-gray-700">
+                  Draft Watermark
+                </label>
+                <button
+                  id="draft"
+                  onClick={() => setDraftEnabled(!draftEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${draftEnabled ? 'bg-blue-600' : 'bg-gray-200'}`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${draftEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                  />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                {draftEnabled
+                  ? 'Draft watermark enabled. "DRAFT" will appear diagonally across pages.'
+                  : 'Draft watermark disabled.'
+                }
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Features Section */}
-        < div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6" >
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 text-center border border-gray-200 hover:shadow-lg transition-shadow duration-200">
             <div className="text-3xl mb-3">📝</div>
             <h3 className="font-semibold text-gray-800 mb-2">Easy Input</h3>
@@ -400,8 +447,8 @@ Use --- to create visible horizontal lines between sections.`}`}
             <h3 className="font-semibold text-gray-800 mb-2">Clean Output</h3>
             <p className="text-gray-600 text-sm">Professional-looking PDFs every time</p>
           </div>
-        </div >
-      </div >
-    </div >
+        </div>
+      </div>
+    </div>
   );
 }

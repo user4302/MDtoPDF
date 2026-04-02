@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Draft watermark toggle functionality for PDF generation
+- Diagonal "DRAFT" watermark with 50% opacity when enabled
+- Draft watermark appears across all pages in PDF output
+- Toggle switch in settings panel for draft watermark control
+- Updated placeholder text with draft watermark documentation
 - Page break support for markdown-to-PDF conversion with three trigger methods
 - HTML inline style method: `<div style="page-break-after: always;"></div>`
 - CSS class method: `<div class="page-break"></div>`
