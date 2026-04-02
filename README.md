@@ -21,7 +21,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
 - 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls and toggle settings
 - 📄 **Page Break Control**: Toggle page breaks on/off or use horizontal lines with three methods
-- 🏷️ **Draft Watermark**: Add diagonal "DRAFT" watermark with customizable density and patterns
+- 🏷️ **Draft Watermark**: Add diagonal "DRAFT" watermark with single or tiled pattern options
 
 ## Tech Stack / Built With 🛠️
 
@@ -104,7 +104,7 @@ Content starts on new page (when toggle is ON)
 
 ### Draft Watermark
 
-Add a professional "DRAFT" watermark to your PDF documents with customizable patterns and density.
+Add a professional "DRAFT" watermark to your PDF documents with two pattern options.
 
 **Toggle Controls:**
 - **Draft Watermark**: Enable/disable the watermark functionality
