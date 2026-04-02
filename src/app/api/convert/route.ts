@@ -139,6 +139,27 @@ export async function POST(request: NextRequest) {
             h1 { font-size: 18pt; }
             h2 { font-size: 16pt; }
             h3 { font-size: 14pt; }
+            
+            /* Page break styles */
+            .page-break {
+              display: block;
+              page-break-after: always;
+              break-after: page;
+            }
+            
+            div[style*="page-break-after: always"] {
+              display: block;
+              page-break-after: always;
+              break-after: page;
+            }
+            
+            hr {
+              border: none;
+              break-after: page;
+              page-break-after: always;
+              margin: 0;
+              height: 0;
+            }
           }
         </style>
       </head>

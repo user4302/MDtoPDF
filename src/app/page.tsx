@@ -182,6 +182,27 @@ export default function Home() {
               background: #f5f5f5;
               font-weight: bold;
             }
+            
+            /* Page break styles */
+            .page-break {
+              display: block;
+              page-break-after: always;
+              break-after: page;
+            }
+            
+            div[style*="page-break-after: always"] {
+              display: block;
+              page-break-after: always;
+              break-after: page;
+            }
+            
+            hr {
+              border: none;
+              break-after: page;
+              page-break-after: always;
+              margin: 0;
+              height: 0;
+            }
           }
           
           @page {
@@ -277,7 +298,7 @@ export default function Home() {
           <textarea
             value={markdown}
             onChange={(e) => setMarkdown(e.target.value)}
-            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript &#10;// Code block&#10;console.log('Hello World');&#10;```"
+            placeholder="Enter your markdown here or upload a file...&#10;&#10;# Heading&#10;## Subheading&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;**Bold text** and *italic text*&#10;&#10;[Link](https://example.com)&#10;&#10;```javascript &#10;// Code block&#10;console.log('Hello World');&#10;```&#10;&#10;--- PAGE BREAKS ---&#10;&#10;For page breaks, use any of these methods:&#10;&#10;1. Standard HTML: &lt;div style=&quot;page-break-after: always;&quot;&gt;&lt;/div&gt;&#10;&#10;2. Clean CSS class: &lt;div class=&quot;page-break&quot;&gt;&lt;/div&gt;&#10;&#10;3. Horizontal rule: --- (will be treated as page break)&#10;&#10;Example:&#10;## End of Section 1&#10;This is the last sentence of the first page.&#10;&#10;&lt;div class=&quot;page-break&quot;&gt;&lt;/div&gt;&#10;&#10;## Start of Section 2&#10;This will start at the top of Page 2."
             className="w-full h-96 p-4 border border-gray-300 rounded-lg font-mono text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50/50"
           />
           <button

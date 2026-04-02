@@ -20,6 +20,7 @@ Try the live application: **https://user4302-mdtopdf.netlify.app/**
 - 🚀 **Client-Side Processing**: No server dependencies, works entirely in your browser
 - 🔒 **Secure Processing**: Complete privacy - your data never leaves your computer
 - 🎯 **User-Friendly**: Modern glassmorphism UI with intuitive controls
+- 📄 **Page Break Support**: Control PDF pagination with three methods (HTML, CSS class, or horizontal rule)
 
 ## Tech Stack / Built With 🛠️
 
@@ -74,6 +75,25 @@ npm run dev
    - Code blocks and inline code
    - Links and images
    - Tables and blockquotes
+
+### Page Breaks
+
+Control PDF pagination using any of these methods:
+
+1. **HTML Inline Style**: `<div style="page-break-after: always;"></div>`
+2. **CSS Class**: `<div class="page-break"></div>`
+3. **Horizontal Rule**: `---` (treated as page break)
+
+Example:
+```markdown
+## Section 1
+Content for first page...
+
+<div class="page-break"></div>
+
+## Section 2
+Content starts on new page
+```
 
 ## Project Structure 📂
 
