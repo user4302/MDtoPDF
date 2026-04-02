@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Multiple draft watermark grid alignment by unifying positioning system
+- First row misalignment resolved by removing mixed pseudo-element and div approach
+- Implemented consistent 6x6 grid with programmatic positioning
+- Simplified watermark CSS structure and removed SVG helper function
+
 ### Added
 - Multiple draft watermark mode with SVG tiled background pattern
 - Non-overlapping draft watermark using CSS background-repeat with SVG tiles

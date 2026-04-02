@@ -32,6 +32,34 @@ export default function Home() {
   const [multipleDraftEnabled, setMultipleDraftEnabled] = useState(false);
 
   /**
+   * Helper function to generate SVG watermark with CSS mask-compatible encoding
+   * @param text - Watermark text to display
+   * @returns Encoded SVG data URI for mask-based vector rendering
+   */
+  const getWatermarkSvg = (text: string): string => {
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>
+        <text 
+          x='50%' 
+          y='50%' 
+          font-size='22pt' 
+          font-weight='bold' 
+          font-family='Arial, sans-serif' 
+          fill='black' 
+          text-anchor='middle' 
+          dominant-baseline='middle' 
+          transform='rotate(-45, 150, 150)'
+        >
+          ${text}
+        </text>
+      </svg>
+    `.trim();
+
+    // Use CSS-compatible escaping for mask images
+    return `url("data:image/svg+xml,${svg.replace(/"/g, "'").replace(/%/g, '%25').replace(/#/g, '%23').replace(/{/g, '%7B').replace(/}/g, '%7D').replace(/</g, '%3C').replace(/>/g, '%3E')}")`;
+  };
+
+  /**
    * Helper function to generate repeated DRAFT text for watermark
    * @param repeatCount - Number of times to repeat "DRAFT "
    * @returns String with repeated "DRAFT " text
@@ -114,16 +142,11 @@ export default function Home() {
       }
 
       // Write the HTML content to iframe
-      iframeDoc.open();
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
       // Step 3: Apply print-specific CSS with responsive sizing
       const contentElement = iframeDoc.body;
-      contentElement.style.backgroundColor = 'white';
-      contentElement.style.margin = '0';
-      contentElement.style.padding = '0';
-      contentElement.style.boxSizing = 'border-box';
       contentElement.innerHTML = `
         <style>
           @media print {
@@ -154,8 +177,8 @@ export default function Home() {
             }
             
             ${multipleDraftEnabled && draftEnabled ? `
-            body:before {
-              content: "";
+            /* Unified watermark grid system */
+            .watermark-grid {
               position: fixed;
               top: 0;
               left: 0;
@@ -163,11 +186,18 @@ export default function Home() {
               height: 100%;
               z-index: -1;
               pointer-events: none;
+            }
+            
+            .watermark-item {
+              position: absolute;
+              font-size: 24pt;
+              font-weight: bold;
+              color: #000;
               opacity: 0.1;
-              
-              /* SVG tiled background pattern */
-              background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='black' font-family='Arial' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45 60 60)'%3E DRAFT %3C/text%3E%3C/svg%3E");
-              background-repeat: repeat;
+              transform: rotate(-45deg);
+              white-space: nowrap;
+              pointer-events: none;
+              z-index: -1;
             }
             
             /* Ensure watermark prints properly */
@@ -272,7 +302,18 @@ export default function Home() {
         </style>
         <div class="markdown-container">
           ${htmlContent}
+        </div>${multipleDraftEnabled && draftEnabled ? `
+        <div class="watermark-grid">
+          ${[0, 1, 2, 3, 4, 5].map(row => `
+            ${[0, 1, 2, 3, 4, 5].map(col => `
+              <div class="watermark-item" style="
+                top: ${row * 16.66}%; 
+                left: ${col * 16.66}%;
+              ">DRAFT</div>
+            `).join('')}
+          `).join('')}
         </div>
+        ` : ''}
       `;
 
       // Step 4: Trigger print dialog
