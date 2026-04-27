@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-04-27
+
+### Refactored
+
+- Extract 170+ line CSS block to reusable lib/print-styles.ts module
+- Extract 45+ line placeholder text to lib/placeholder-text.ts module
+- Update page title to display version from package.json
+- Fix JSX syntax error by escaping quotes with HTML entities
+
 ## [1.2.2] - 2026-04-27
 
 ### Fixed
