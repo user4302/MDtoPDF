@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 // Type definition for our PDF job storage
 interface PdfJob {
@@ -31,8 +33,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if we have the job in file system storage
-    const fs = require('fs');
-    const path = require('path');
 
     const tempDir = path.join('/tmp', 'pdf-jobs');
     const jobFile = path.join(tempDir, `${jobId}.json`);
