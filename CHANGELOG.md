@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added HTML preprocessing to keep description paragraphs and their following lists together
 - Enhanced CSS rules to prevent page breaks around headings, lists, and list items
 
+### Refactored
+
+- Replace require() statements with ES6 imports in pdf-download and pdf-status routes
+- Extract mock PDF content from pdf-download.ts to dedicated lib/mock-pdf.ts module
+- Extract HTML template with CSS from convert/route.ts to reusable lib/html-template.ts function
+- Improve code organization and separation of concerns between business logic and presentation
+
 ## [1.2.1] - 2026-04-03
 
 ### Added
