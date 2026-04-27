@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent unwanted automatic page breaks in PDF generation while preserving explicit page break methods
 - Added HTML preprocessing to keep description paragraphs and their following lists together
 - Enhanced CSS rules to prevent page breaks around headings, lists, and list items
+- Fix --- being interpreted as Setext heading when placed directly after text without blank line
+- Add markdown preprocessing to ensure --- is always treated as horizontal rule
+- Reorganize CSS to ensure hr page break rules properly override universal page break prevention
 
 ### Refactored
 

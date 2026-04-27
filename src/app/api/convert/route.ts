@@ -26,8 +26,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Preprocess markdown to ensure --- is treated as horizontal rule
+    // Add blank line before --- when it's directly after text to prevent Setext heading interpretation
+    const processedMarkdown = markdown.replace(/([^\n])\n---/g, '$1\n\n---');
+    
     // Convert markdown to HTML using marked library
-    let html = await marked(markdown);
+    let html = await marked(processedMarkdown);
+    
+    // Preprocess HTML to ensure --- becomes hr instead of heading
+    // Replace any h2 or h1 that might be created from --- with proper hr
+    html = html.replace(/<h[12][^>]*>---<\/h[12]>/gi, '<hr>');
+    
+    // Also handle Setext-style headings where --- becomes underline for text
+    // Look for patterns like: <h2>text</h2> followed by <p>---</p>
+    html = html.replace(/<\/h[12]>\s*<p>---<\/p>/gi, '</h$1><hr>');
     
     // Preprocess HTML to prevent page breaks between descriptions and lists
     // Merge <p>**Description:**...</p> with following <ul> elements

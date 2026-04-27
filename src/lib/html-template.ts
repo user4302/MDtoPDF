@@ -119,7 +119,7 @@ export function createHtmlDocument(html: string, pageBreaksEnabled: boolean = tr
           h2 { font-size: 16pt; }
           h3 { font-size: 14pt; }
           
-          /* Universal rule: prevent ALL automatic page breaks */
+          /* Universal rule: prevent ALL automatic page breaks except hr */
           * {
             page-break-before: auto !important;
             break-before: auto !important;
@@ -137,6 +137,17 @@ export function createHtmlDocument(html: string, pageBreaksEnabled: boolean = tr
             break-before: avoid !important;
             page-break-after: avoid !important;
             break-after: avoid !important;
+          }
+          
+          /* HR page break - must come after universal rule to override */
+          hr {
+            border: ${pageBreaksEnabled ? "none" : "1px solid #eaecef"};
+            break-after: ${pageBreaksEnabled ? "page" : "auto"} !important;
+            page-break-after: ${pageBreaksEnabled ? "always" : "auto"} !important;
+            margin: ${pageBreaksEnabled ? "0" : "24px 0"};
+            height: ${pageBreaksEnabled ? "0" : "1px"};
+            page-break-before: auto !important;
+            break-before: auto !important;
           }
           
           /* Specifically prevent page breaks before and after headings */
@@ -190,16 +201,6 @@ export function createHtmlDocument(html: string, pageBreaksEnabled: boolean = tr
             display: ${pageBreaksEnabled ? "block" : "none"};
             page-break-after: ${pageBreaksEnabled ? "always" : "auto"} !important;
             break-after: ${pageBreaksEnabled ? "page" : "auto"} !important;
-            page-break-before: auto !important;
-            break-before: auto !important;
-          }
-          
-          hr {
-            border: ${pageBreaksEnabled ? "none" : "1px solid #eaecef"};
-            break-after: ${pageBreaksEnabled ? "page" : "auto"} !important;
-            page-break-after: ${pageBreaksEnabled ? "always" : "auto"} !important;
-            margin: ${pageBreaksEnabled ? "0" : "24px 0"};
-            height: ${pageBreaksEnabled ? "0" : "1px"};
             page-break-before: auto !important;
             break-before: auto !important;
           }
